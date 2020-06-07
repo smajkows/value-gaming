@@ -4,11 +4,24 @@ import requests
 import webbrowser
 import json
 import urllib.parse
+import os
+from env_variables import DEV_APP_ID
+
+
+def is_dev_environment():
+    """ Return true if running on a local dev environment, false otherwise """
+    return os.getenv('APPLICATION_ID', None) == DEV_APP_ID
+
+
+if is_dev_environment():
+    base_url = 'http://localhost:8000'
+else:
+    base_url = 'http://project-moon-landing.appspot.com'
 
 
 class TDAmeritradeAuth(object):
     def __init__(self):
-        self.redirect_uri = 'http://localhost:8000/callback/amtrade'
+        self.redirect_uri = base_url + '/callback/amtrade'
         self.client_id = CONSUMER_KEY
         self.authorize_url = 'http://auth.tdameritrade.com/auth'
 
