@@ -12,6 +12,7 @@ from django.core.exceptions import PermissionDenied
 import google.oauth2.id_token
 from datetime import datetime
 import json
+from django.shortcuts import redirect
 
 firebase_request_adapter = requests.Request()
 client = datastore.Client()
@@ -113,8 +114,8 @@ class EtradeAuthHandler(AuthHandler):
 
 class TDAmeritradeAuthHandler(AuthHandler):
     def get(self, request, platform):
-        TDAmeritradeAuth().get_login_page()
-        return HttpResponse()
+        url = TDAmeritradeAuth().get_login_page()
+        return redirect(url)
 
 
 class AuthHandlerFactory(View):

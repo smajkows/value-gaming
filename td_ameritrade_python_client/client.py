@@ -6,6 +6,7 @@ import json
 import urllib.parse
 import os
 from env_variables import DEV_APP_ID
+import logging
 
 
 def is_dev_environment():
@@ -29,9 +30,9 @@ class TDAmeritradeAuth(object):
         url = self.authorize_url + '?response_type=code' + '&redirect_uri=' + \
               urllib.parse.quote('{}'.format(self.redirect_uri), safe='') + '&client_id=' + \
               self.client_id + '%40AMER.OAUTHAP'
-
-        webbrowser.open(url)
-        return
+        logging.debug("URL {} for TDAmeritradeAuth".format(url))
+        #webbrowser.open(url)
+        return url
 
     def get_token(self, code):
         headers = {
