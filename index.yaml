@@ -1,0 +1,12 @@
+indexes:
+
+- kind: NdbDailyAccountStats
+  properties:
+  - name: account
+  - name: date
+    direction: desc
+
+- kind: NdbDailyAccountStats
+  properties:
+  - name: account
+  - name: date
