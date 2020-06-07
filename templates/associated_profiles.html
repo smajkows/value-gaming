@@ -1,0 +1,42 @@
+<head>
+    {% load static %}
+</head>
+<div class="account-table-wrapper">
+    <table class="base_table">
+        <thead class="base_table_head">
+            <tr class="class="table-row-header">
+                <th>
+                    Platform
+                </th>
+                <th>
+                    Account Name
+                </th>
+                <th>
+                    Account ID
+                </th>
+                <th>
+                    Balance
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for profile in profiles %}
+                <tr>
+                    <td>
+                        <img src="/static/img/{{ profile.platform }}.png" height="50px" width="50px"/>
+                    </td>
+                    <td>
+                        {{ profile.account_name }}
+                    </td>
+                    <td>
+                        {{ profile.account_id }}
+                    </td>
+                    <td>
+                        {{ profile.current_balance }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Landing</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'login.css' %}">
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-analytics.js"></script>
+
+    <script>
+      // Your web app's Firebase configuration
+      var firebaseConfig = {
+        apiKey: "AIzaSyCVoNcuKeb_1Pyer_7OWgZLzBMJktOmoCs",
+        authDomain: "project-moon-landing.firebaseapp.com",
+        databaseURL: "https://project-moon-landing.firebaseio.com",
+        projectId: "project-moon-landing",
+        storageBucket: "project-moon-landing.appspot.com",
+        messagingSenderId: "858100056639",
+        appId: "1:858100056639:web:803c0797ff99668fb7ee8a",
+        measurementId: "G-2LRYDWY7D7"
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
+</head>
+
+<body>
+
+<div class="navbar">
+  <a href="/home">Home</a>
+  <a href="/leaderboard">Leaderboard</a>
+</div>
+<div class="main">
+<button id="sign-out" hidden=true class='login-button'>
+    Sign Out
+</button>
+    {% block content %}
+        <div class="center-wrapper main-box" style="height: 400px; width: 400px">
+            <a class="center-wrapper signup" href="/login">Sign Up / Login?</a>
+        </div>
+    {% endblock %}
+</div>
+
+
+</body>
+</html>
+
+{% block javascript %}
+    <script>
+      window.addEventListener('load', function () {
+
+        var sign_out_button = null;
+
+        if(document.getElementById('sign-out-login-page')) {
+            sign_out_button = document.getElementById('sign-out-login-page');
+            document.getElementById('sign-out').hidden = true;
+        }else {
+            sign_out_button = document.getElementById('sign-out')
+        }
+
+      sign_out_button.onclick = function () {
+        firebase.auth().signOut();
+        location.replace("/");
+      };
+
+
+      // FirebaseUI config.
+      var uiConfig = {
+        signInSuccessUrl: '/',
+        signInOptions: [
+          // Comment out any lines corresponding to providers you did not check in
+          // the Firebase console.
+          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+          firebase.auth.EmailAuthProvider.PROVIDER_ID,
+          //firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+          //firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+          //firebase.auth.GithubAuthProvider.PROVIDER_ID,
+          //firebase.auth.PhoneAuthProvider.PROVIDER_ID
+
+        ],
+        // credentialHelper: firebaseui.auth.CredentialHelper.NONE,
+        // Terms of service url.
+        tosUrl: '<your-tos-url>'
+      };
+
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+          // User is signed in, so display the "sign out" button and login info.
+          sign_out_button.hidden = false;
+          // document.getElementById('login-info').hidden = false;
+          sign_out_button.innerHTML = `Sign out: ${user.displayName} ?`;
+          console.log(`Signed in as ${user.displayName} (${user.email})`);
+          user.getIdToken().then(function (token) {
+            // Add the token to the browser's cookies. The server will then be
+            // able to verify the token against the API.
+            // SECURITY NOTE: As cookies can easily be modified, only put the
+            // token (which is verified server-side) in a cookie; do not add other
+            // user information.
+            document.cookie = "token=" + token;
+          });
+        } else {
+          // Initialize the FirebaseUI Widget using Firebase.
+          var ui = new firebaseui.auth.AuthUI(firebase.auth());
+          // Show the Firebase login button.
+          ui.start('#firebaseui-auth-container', uiConfig);
+          // Update the login state indicators.
+            sign_out_button.hidden = true;
+          // document.getElementById('login-info').hidden = true;
+          // Clear the token cookie.
+          document.cookie = "token=";
+        }
+      }, function (error) {
+        console.log(error);
+        alert('Unable to log in: ' + error)
+      });
+    });
+    </script>
+
+{% endblock %}
+
+
+

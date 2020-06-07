@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="account-table-wrapper">
+    <table class="base_table">
+        <thead class="base_table_head">
+            <tr class=table-row-header">
+                <th>
+                    Platform
+                </th>
+                <th>
+                    Account Name
+                </th>
+                <th>
+                    Account ID
+                </th>
+                <th>
+                    Balance
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for profile in profiles %}
+                <tr class="clickable-row" data-href="/account/page/{{ profile.platform }}_{{ profile.account_id }}">
+                    <td>
+                        <img src="/static/img/{{ profile.platform }}.png" height="50px" width="50px"/>
+                    </td>
+                    <td>
+                        {{ profile.account_name }}
+                    </td>
+                    <td>
+                        {{ profile.id }}
+                    </td>
+                    <td>
+                        {{ profile.current_balance }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        $(".clickable-row").click(function() {
+        window.location = $(this).data("href");
+    });
+
+    </script>
+{% endblock %}

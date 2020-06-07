@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+<title>Account Page</title>
+{% block content %}
+    <div class="center-wrapper main-box" style="height: 100%; width: 100%">
+        <canvas id="myChart" width="400" height="200"></canvas>
+    </div>
+    <div class="account-table-wrapper">
+        <table class="base_table">
+            <thead class="base_table_head">
+                <tr class="table-row-header">
+                    <th>
+                        Ticker
+                    </th>
+                    <th>
+                        Avg. Price
+                    </th>
+                    <th>
+                        Market Value
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for position in positions %}
+                    <tr>
+                        <td>
+                            {{ position.instrument.symbol }}
+                        </td>
+                        <td>
+                            {{ position.averagePrice }}
+                        </td>
+                        <td>
+                            {{ position.marketValue }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+    $( document ).ready(function() {
+        console.log('DOCUMENT IS READY');
+        console.log({{ balance_stats|safe }});
+        var x = new Chart(document.getElementById("myChart"), {
+           type: 'line',
+           data: {
+              datasets: [{
+                 label: "Account Value",
+                 data: {{ balance_stats|safe }},
+              }]
+           },
+           options: {
+              responsive: true
+           }
+        });
+    });
+    </script>
+
+{% endblock %}
+

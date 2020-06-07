@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% include 'connect_brokerage_account.html' %}
+    <br>
+    <h2> Connected Accounts </h2>
+    {% include 'associated_profiles.html' with profiles=user_info %}
+{% endblock %}

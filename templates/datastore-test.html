@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Title</title>
+</head>
+<body>
+
+{% for item in items %}
+    <p>
+        {{ item }}
+    </p>
+    <p> {{ item.account_id }}</p>
+    <p> {{ item.open }}</p>
+    <p> {{ item.name }}</p>
+{% endfor %}
+
+{% for position in daily_account_stats %}
+    <p>
+        Ticker: {{ position.instrument.symbol }}
+    </p>
+    <p>
+        Avg. Price {{ position.averagePrice }}
+    </p>
+    <p>
+        Market Value: {{ position.marketValue }}
+    </p>
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+{% block content %}
+    <div>
+        <button class='login-button'>
+            <a href="/auth/etrade/">Connect Etrade</a>
+        </button>
+
+    </div>
+    <div>
+        <button class='login-button' onclick="connect_profile('td-ameritrade')">
+            <a>Connect TD Ameritrade</a>
+        </button>
+    </div>
+{% endblock %}
+
+
+
+{% block javascript %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+      function connect_profile(platform) {
+          $.ajax({
+              url: '/auth/' + platform,
+              dataType: 'json',
+              success: function (xhr) {
+                  alert("AJAX was triggered successfully");
+              }
+          });
+      }
+
+    </script>
+{% endblock %}
