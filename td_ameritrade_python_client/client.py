@@ -61,14 +61,12 @@ class TDAmeritradeAuth(object):
         if response.get('error'):
             print('error in getting user_info')
             return None
-        print(response)
         balance_info = {
             'id': response['securitiesAccount']['accountId'],
-            'balance': response['securitiesAccount']['initialBalances']['accountValue'],
-            'cash_balance': response['securitiesAccount']['initialBalances']['cashBalance'],
+            'balance': response['securitiesAccount']['currentBalances']['liquidationValue'],
+            'cash_balance': response['securitiesAccount']['currentBalances']['availableFunds'],
             'positions': response['securitiesAccount'].get('positions')
         }
-        print(balance_info['positions'])
         return balance_info
 
     def get_user_info(self, access_token, refresh_token):
