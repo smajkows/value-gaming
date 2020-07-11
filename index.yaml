@@ -10,3 +10,9 @@ indexes:
   properties:
   - name: account
   - name: date
+
+- kind: NdbTransaction
+  properties:
+  - name: account
+  - name: transaction_date
+    direction: desc
