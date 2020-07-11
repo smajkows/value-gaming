@@ -1,5 +1,5 @@
 from rauth import OAuth2Service
-from td_ameritrade_python_client.config_file import CONSUMER_KEY
+from td_ameritrade_python_client.config_file import CONSUMER_KEY, CONSUMER_KEY_LOCAL
 import requests
 import webbrowser
 import json
@@ -11,13 +11,16 @@ import logging
 
 def is_dev_environment():
     """ Return true if running on a local dev environment, false otherwise """
-    return os.getenv('APPLICATION_ID', None) == DEV_APP_ID
+    return True #os.getenv('APPLICATION_ID', None) == DEV_APP_ID
 
 
 if is_dev_environment():
     base_url = 'http://localhost:8000'
+    CONSUMER_KEY = CONSUMER_KEY_LOCAL
 else:
     base_url = 'http://project-moon-landing.appspot.com'
+
+print(base_url)
 
 
 class TDAmeritradeAuth(object):
@@ -50,6 +53,18 @@ class TDAmeritradeAuth(object):
         response = requests.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data).json()
         return response
 
+
+    def get_account_transactions(self, access_token, account_id):
+
+        url = 'https://api.tdameritrade.com/v1/accounts/{}/transactions'.format(account_id)
+
+        headers = {
+            'Authorization': 'Bearer {}'.format(access_token)
+        }
+        transaction_list = requests.get(url, headers=headers).json()
+        return transaction_list
+
+
     def get_account_balances(self, access_token, account_id, positions=True):
         url = 'https://api.tdameritrade.com/v1/accounts/{}'.format(account_id)
         if positions:
@@ -59,7 +74,8 @@ class TDAmeritradeAuth(object):
         }
         response = requests.get(url, headers=headers).json()
         if response.get('error'):
-            print('error in getting user_info')
+            print('error in getting account balances')
+            print(response.get('error'))
             return None
         balance_info = {
             'id': response['securitiesAccount']['accountId'],

@@ -198,17 +198,39 @@ class AccountPageHandler(View):
 
     def get(self, request, account_id):
         template = loader.get_template(self.template)
+
         query = client.query(kind='NdbDailyAccountStats', order=('date',))
         query = query.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
         daily_stats = query.fetch()
-        daily_stats_data = []
+
+        query2 = client.query(kind='NdbTransaction', order=('transaction_date',))
+        query2 = query2.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
+        transactions_fetch = query2.fetch()
+
+
+        daily_stats_labels = []
+        daily_stats_balances = []
         positions = []
+        transactions = []
+
+        for transaction in transactions_fetch:
+            if transaction['amount'] and transaction['cost'] >= 0:  # change this heruist should be done when polling
+                transactions.append({'instruction': transaction['instruction'],
+                                     'type': transaction['type'],
+                                     'transaction_date': transaction['transaction_date'],
+                                     'symbol': transaction['symbol'],
+                                     'amount': transaction['amount'],
+                                     'price': transaction['price'],
+                                     'cost': transaction['cost']})
         for daily in daily_stats:
             if daily.get('positions'):
                 positions = daily.get('positions').decode('utf-8')
-            daily_stats_data.append({'x': daily['date'].strftime("%m/%d/%Y"), 'y': daily['balance']})
+            daily_stats_labels.append(daily['date'].strftime("%m/%d/%Y"))
+            daily_stats_balances.append(daily['balance'])
+
         json_positions = json.loads(positions)
-        context = {'balance_stats': daily_stats_data, 'positions': json_positions}
+
+        context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions, 'transactions': transactions}
         return HttpResponse(template.render(context, request))
 
 
@@ -217,7 +239,6 @@ class DailyAccountPoll(View):
     def get(self, request):
         accounts_to_poll = NdbAccount.query().fetch()
         for account in accounts_to_poll:
-            print(account)
             handler = AccountHandlerFactory.get_handler(account.platform)
             handler.poll_daily_account_stats(account)
         return HttpResponse()

@@ -1,41 +1,97 @@
 {% extends 'base.html' %}
 <title>Account Page</title>
 {% block content %}
-    <div class="center-wrapper main-box" style="height: 100%; width: 100%">
-        <canvas id="myChart" width="400" height="200"></canvas>
-    </div>
-    <div class="account-table-wrapper">
-        <table class="base_table">
+    <div style="width: 100%; height: 100%">
+    <div style="display: flex">
+        <div style="height: 250px; flex-grow: 3; background-color: #ffffff; border: solid black 1px; margin: 10px">
+            <canvas id="myChart" height="250" width="600"></canvas>
+        </div>
+        <table class="transaction_table" style="height: 250px; flex-grow: 3;">
             <thead class="base_table_head">
                 <tr class="table-row-header">
+                    <th>
+                        Trade Type
+                    </th>
+                    <th>
+                        Trade Date
+                    </th>
                     <th>
                         Ticker
                     </th>
                     <th>
-                        Avg. Price
+                        Amount
                     </th>
                     <th>
-                        Market Value
+                        Price
+                    </th>
+                    <th>
+                        Total Cost
                     </th>
                 </tr>
             </thead>
             <tbody>
-                {% for position in positions %}
+                {% for transaction in transactions %}
                     <tr>
                         <td>
-                            {{ position.instrument.symbol }}
+                            {% if transaction.instruction %}
+                                {{ transaction.instruction }}
+                            {% else %}
+                                {{ transaction.type }}
+                            {% endif %}
                         </td>
                         <td>
-                            {{ position.averagePrice }}
+                            {{ transaction.transaction_date }}
                         </td>
                         <td>
-                            {{ position.marketValue }}
+                            {{ transaction.symbol }}
+                        </td>
+                        <td>
+                            {{ transaction.amount }}
+                        </td>
+                        <td>
+                            {{ transaction.price }}
+                        </td>
+                        <td>
+                            {{ transaction.cost }}
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        </div>
+    </div>
+
+            <table class="base_table">
+                <thead class="base_table_head">
+                    <tr class="table-row-header">
+                        <th>
+                            Ticker
+                        </th>
+                        <th>
+                            Avg. Price
+                        </th>
+                        <th>
+                            Market Value
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position in positions %}
+                        <tr>
+                            <td>
+                                {{ position.instrument.symbol }}
+                            </td>
+                            <td>
+                                {{ position.averagePrice }}
+                            </td>
+                            <td>
+                                {{ position.marketValue }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    </div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -44,18 +100,20 @@
     <script>
     $( document ).ready(function() {
         console.log('DOCUMENT IS READY');
-        console.log({{ balance_stats|safe }});
         var x = new Chart(document.getElementById("myChart"), {
-           type: 'line',
-           data: {
-              datasets: [{
-                 label: "Account Value",
-                 data: {{ balance_stats|safe }},
-              }]
-           },
-           options: {
-              responsive: true
-           }
+          type: 'line',
+          data: {
+            labels: {{ labels|safe }},
+            datasets: [
+                {
+                  label: 'Account Value',
+                  data: {{ balances|safe }},
+                }
+            ]
+          },
+            options: {
+              responsive: false,
+            }
         });
     });
     </script>

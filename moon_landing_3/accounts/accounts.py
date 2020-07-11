@@ -27,6 +27,21 @@ class NdbAccount(Account, ndb.PolyModel):
         self.put()
 
 
+class NdbTransaction(ndb.PolyModel):
+    account = ndb.KeyProperty(required=True, default=None)  # the account this transaction belongs to
+    type = ndb.StringProperty(required=True)  # the type of transaction
+    settlement_date = ndb.DateTimeProperty(required=True)
+    transaction_date = ndb.DateTimeProperty(required=True)
+    transaction_id = ndb.StringProperty(required=True)  # the id of the transaction from the platform api
+    description = ndb.StringProperty()
+    amount = ndb.FloatProperty()
+    price = ndb.FloatProperty()
+    cost = ndb.FloatProperty(required=True)
+    instruction = ndb.StringProperty()
+    symbol = ndb.StringProperty()
+    asset_type = ndb.StringProperty()
+
+
 class DailyAccountStats(object):
     """
     Object to store the daily stats of an account
