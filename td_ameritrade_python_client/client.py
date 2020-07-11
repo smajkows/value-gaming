@@ -11,7 +11,7 @@ import logging
 
 def is_dev_environment():
     """ Return true if running on a local dev environment, false otherwise """
-    return True #os.getenv('APPLICATION_ID', None) == DEV_APP_ID
+    return os.getenv('APPLICATION_ID', None) == DEV_APP_ID
 
 
 if is_dev_environment():
