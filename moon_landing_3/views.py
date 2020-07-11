@@ -203,7 +203,7 @@ class AccountPageHandler(View):
         query = query.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
         daily_stats = query.fetch()
 
-        query2 = client.query(kind='NdbTransaction', order=('transaction_date',))
+        query2 = client.query(kind='NdbTransaction', order=('-transaction_date',))
         query2 = query2.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
         transactions_fetch = query2.fetch()
 
