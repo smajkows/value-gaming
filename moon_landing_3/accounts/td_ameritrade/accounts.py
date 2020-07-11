@@ -1,4 +1,4 @@
-from moon_landing_3.accounts.accounts import AbstractAccountHandler, NdbDailyAccountStats, NdbAccount
+from moon_landing_3.accounts.accounts import AbstractAccountHandler, NdbDailyAccountStats, NdbAccount, NdbTransaction
 from moon_landing_3.profiles.td_ameritrade.profiles import TDAmeritradeProfile
 from td_ameritrade_python_client.client import TDAmeritradeAuth
 import datetime
@@ -23,10 +23,13 @@ class TDAmeritradeAccount(NdbAccount):
 
     def _post_put_hook(self, future):
         profile = self.profile_id.get()
-        print(profile)
         if self.key not in profile.accounts:
             profile.accounts.append(self.key)
             profile.put()
+
+
+class TDAmeritradeTransaction(NdbTransaction):
+    pass
 
 
 class TDAmeritradeDailyAccountStats(NdbDailyAccountStats):
@@ -38,6 +41,7 @@ class TDAmeritradeDailyAccountStats(NdbDailyAccountStats):
 
 class TDAmeritradeAccountHandler(TDAmeritrade, AbstractAccountHandler):
     MODEL = TDAmeritradeAccount
+    TRANSACTION_MODEL = TDAmeritradeTransaction
     DAILY_STATS_MODEL = TDAmeritradeDailyAccountStats
 
     def create_account_from_api(self, account):
@@ -66,12 +70,72 @@ class TDAmeritradeAccountHandler(TDAmeritrade, AbstractAccountHandler):
         if not balance_info:
             # crednetials are likely None try to update the user profile
             resp = TDAmeritradeAuth().refresh_token(profile.refresh_token)
+            print(resp)
             profile.access_token = resp['access_token']
             profile.refresh_token = resp['refresh_token']
             profile.put()
+            account.put()
             self.poll_daily_account_stats(account)  # try to repoll this account after updating the profile access token
         self.create_daily_stats_from_api(balance_info)
-        account.update_account_balance() # updates the most recent account balance for this account
+        transaction_info = TDAmeritradeAuth().get_account_transactions(access_token, account.account_id)
+        self.create_transactions_from_api(transaction_info)
+        account.update_account_balance()  # updates the most recent account balance for this account
+        return
+
+    def create_transactions_from_api(self, transaction_info):
+        for transaction in transaction_info:
+            transaction_id = transaction['transactionId']
+            id = '{}_{}'.format(self.PLATFORM, transaction_id)
+
+
+            #if ndb.Key(self.TRANSACTION_MODEL, id).get():
+                # transaction is already stored in the system no need to update it
+            #    continue
+
+            transaction_item = transaction['transactionItem']
+            if not transaction_item:
+                continue
+
+            account_id = '{}_{}'.format(self.PLATFORM, transaction_item['accountId'])
+
+            type = transaction['type']
+            s_date_str = transaction['settlementDate'].split('T')[0]
+            settlement_date = datetime.datetime.strptime(s_date_str, '%Y-%m-%d')
+            print('settlement date: {}'.format(settlement_date))
+
+            t_date_str = transaction['transactionDate'].split('T')[0]
+            transaction_date = datetime.datetime.strptime(t_date_str, '%Y-%m-%d')
+
+            transaction_id = str(transaction['transactionId'])
+            description = transaction['description']
+
+            amount = transaction_item.get('amount', None)
+            price = transaction_item.get('price', None)
+            cost = transaction_item['cost']
+            instruction = transaction_item.get('instruction', None)
+            instrument = transaction_item.get('instrument')
+
+            symbol = instrument['symbol'] if instrument else None
+            asset_type = instrument['assetType'] if instrument else None
+
+            if ndb.Key(self.MODEL, account_id).get():
+                # Only create daily stats for an account if we can find the account it belongs to
+                account_key = ndb.Key(self.MODEL, account_id)
+                transaction_ndb_item = self.TRANSACTION_MODEL(id=id,
+                                                              account=account_key,
+                                                              type=type,
+                                                              settlement_date=settlement_date,
+                                                              transaction_date=transaction_date,
+                                                              transaction_id=transaction_id,
+                                                              description=description,
+                                                              amount=amount,
+                                                              price=price,
+                                                              cost=cost,
+                                                              instruction=instruction,
+                                                              symbol=symbol,
+                                                              asset_type=asset_type)
+                print('putting transaction in db {}'.format(transaction_ndb_item))
+                transaction_ndb_item.put()
         return
 
     def create_daily_stats_from_api(self, balance_info):
