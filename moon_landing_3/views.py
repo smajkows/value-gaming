@@ -10,7 +10,7 @@ from google.auth.transport import requests
 from google.cloud import datastore, ndb
 from django.core.exceptions import PermissionDenied
 import google.oauth2.id_token
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import json
 from django.shortcuts import redirect
 
@@ -210,8 +210,23 @@ class AccountPageHandler(View):
 
         daily_stats_labels = []
         daily_stats_balances = []
+
+        one_week_labels = []
+        one_week_balances = []
+
+        one_month_labels = []
+        one_month_balances = []
+
+        one_year_labels = []
+        one_year_balances = []
+
+        label_lists = [daily_stats_labels, one_week_labels, one_month_labels, one_year_labels]
+        balance_lists = [daily_stats_balances, one_week_balances, one_month_balances, one_year_balances]
+
         positions = []
         transactions = []
+
+        today = datetime.today()
 
         for transaction in transactions_fetch:
             if transaction['amount'] and transaction['cost'] >= 0:  # change this heruist should be done when polling
@@ -225,12 +240,39 @@ class AccountPageHandler(View):
         for daily in daily_stats:
             if daily.get('positions'):
                 positions = daily.get('positions').decode('utf-8')
-            daily_stats_labels.append(daily['date'].strftime("%m/%d/%Y"))
-            daily_stats_balances.append(daily['balance'])
+
+            label = daily['date'].strftime("%m/%d/%Y")
+            balance = daily['balance']
+            daily_date = daily['date'].replace(tzinfo=None)
+
+            if daily_date > today - timedelta(days=7):
+                one_week_labels.append(label)
+                one_week_balances.append(balance)
+
+            if daily_date > today - timedelta(days=30):
+                one_month_labels.append(label)
+                one_month_balances.append(balance)
+
+            if daily_date > today - timedelta(days=365):
+                one_year_labels.append(label)
+                one_year_balances.append(balance)
+
+            daily_stats_labels.append(label)
+            daily_stats_balances.append(balance)
 
         json_positions = json.loads(positions)
 
-        context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions, 'transactions': transactions}
+        week_gain = (one_week_balances[-1] - one_week_balances[0])/one_week_balances[0] if one_week_balances[0] else 0
+        month_gain = (one_month_balances[-1] - one_month_balances[0])/one_month_balances[0] if one_month_balances[0] else 0
+        year_gain = (one_year_balances[-1] - one_year_balances[1])/one_year_balances[1]
+        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[1])/daily_stats_balances[1]
+
+        context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
+                   'transactions': transactions, 'one_week_labels': one_month_labels, 'one_week_balances': one_week_balances,
+                   'one_month_labels': one_month_labels, 'one_month_balances': one_month_balances, 'one_year_labels': one_year_labels,
+                   'one_year_balances': one_year_balances, 'week_gain': "{:.2%}".format(week_gain), 'month_gain': "{:.2%}".format(month_gain),
+                   'year_gain': "{:.2%}".format(year_gain), 'alltime_gain': "{:.2%}".format(alltime_gain)}
+
         return HttpResponse(template.render(context, request))
 
 
