@@ -220,9 +220,6 @@ class AccountPageHandler(View):
         one_year_labels = []
         one_year_balances = []
 
-        label_lists = [daily_stats_labels, one_week_labels, one_month_labels, one_year_labels]
-        balance_lists = [daily_stats_balances, one_week_balances, one_month_balances, one_year_balances]
-
         positions = []
         transactions = []
 
@@ -268,7 +265,7 @@ class AccountPageHandler(View):
         alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[1])/daily_stats_balances[1]
 
         context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
-                   'transactions': transactions, 'one_week_labels': one_month_labels, 'one_week_balances': one_week_balances,
+                   'transactions': transactions, 'one_week_labels': one_week_labels, 'one_week_balances': one_week_balances,
                    'one_month_labels': one_month_labels, 'one_month_balances': one_month_balances, 'one_year_labels': one_year_labels,
                    'one_year_balances': one_year_balances, 'week_gain': "{:.2%}".format(week_gain), 'month_gain': "{:.2%}".format(month_gain),
                    'year_gain': "{:.2%}".format(year_gain), 'alltime_gain': "{:.2%}".format(alltime_gain)}
