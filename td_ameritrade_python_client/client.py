@@ -1,8 +1,5 @@
-from rauth import OAuth2Service
 from td_ameritrade_python_client.config_file import CONSUMER_KEY, CONSUMER_KEY_LOCAL
 import requests
-import webbrowser
-import json
 import urllib.parse
 import os
 from env_variables import DEV_APP_ID
@@ -34,7 +31,6 @@ class TDAmeritradeAuth(object):
               urllib.parse.quote('{}'.format(self.redirect_uri), safe='') + '&client_id=' + \
               self.client_id + '%40AMER.OAUTHAP'
         logging.debug("URL {} for TDAmeritradeAuth".format(url))
-        #webbrowser.open(url)
         return url
 
     def get_token(self, code):
