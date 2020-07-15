@@ -84,7 +84,11 @@ class TDAmeritradeAccountHandler(TDAmeritrade, AbstractAccountHandler):
 
     def create_transactions_from_api(self, transaction_info):
         for transaction in transaction_info:
-            transaction_id = transaction['transactionId']
+            transaction_id = transaction.get('orderId')
+            if not transaction_id:
+                print('skipping item no transactionId')
+                continue
+
             id = '{}_{}'.format(self.PLATFORM, transaction_id)
 
 
