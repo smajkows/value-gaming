@@ -8,7 +8,7 @@ import logging
 
 def is_dev_environment():
     """ Return true if running on a local dev environment, false otherwise """
-    return True #os.getenv('APPLICATION_ID', None) == DEV_APP_ID
+    return os.getenv('APPLICATION_ID', None) == DEV_APP_ID
 
 
 if is_dev_environment():
@@ -57,8 +57,10 @@ class TDAmeritradeAuth(object):
         headers = {
             'Authorization': 'Bearer {}'.format(access_token)
         }
+
         transaction_list = requests.get(url, headers=headers).json()
-        return transaction_list
+        transaction_object = {'account_id': account_id, 'transactions': transaction_list}
+        return transaction_object
 
 
     def get_account_balances(self, access_token, account_id, positions=True):

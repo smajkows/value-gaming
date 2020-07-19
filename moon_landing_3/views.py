@@ -226,7 +226,7 @@ class AccountPageHandler(View):
         today = datetime.today()
 
         for transaction in transactions_fetch:
-            if transaction['amount'] and transaction['cost'] >= 0:  # change this heruist should be done when polling
+            if transaction['amount'] and transaction['cost'] <= 0:  # change this heruist should be done when polling
                 transactions.append({'instruction': transaction['instruction'],
                                      'type': transaction['type'],
                                      'transaction_date': transaction['transaction_date'],
