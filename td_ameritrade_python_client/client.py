@@ -27,7 +27,7 @@ class TDAmeritradeAuth(object):
         self.authorize_url = 'http://auth.tdameritrade.com/auth'
 
     def get_login_page(self):
-        url = self.authorize_url + '?response_type=code' + '&redirect_uri=' + \
+        url = self.authorize_url + '?response_type=code' + '&scope=AccountAccess' + '&redirect_uri=' + \
               urllib.parse.quote('{}'.format(self.redirect_uri), safe='') + '&client_id=' + \
               self.client_id + '%40AMER.OAUTHAP'
         logging.debug("URL {} for TDAmeritradeAuth".format(url))
@@ -46,7 +46,8 @@ class TDAmeritradeAuth(object):
             'client_id': self.client_id,
             'redirect_uri': self.redirect_uri
         }
-        response = requests.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data).json()
+        response = requests.post('https://api.tdameritrade.com/v1/oauth2/token?scope=AccountAccess', headers=headers, data=data).json()
+        print(response)
         return response
 
 
@@ -113,7 +114,8 @@ class TDAmeritradeAuth(object):
             'redirect_uri': self.redirect_uri
         }
         print('refreshing token with : {}'.format(refresh_token))
-        response = requests.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data).json()
+        response = requests.post('https://api.tdameritrade.com/v1/oauth2/token?scope=AccountAccess', headers=headers, data=data).json()
+        print(response)
         return response
 
 
