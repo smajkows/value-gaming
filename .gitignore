@@ -1,0 +1,68 @@
+#python
+*.pyc
+
+#xcode
+build/*
+*.pbxuser
+*.mode2v3
+*.mode1v3
+*.perspective
+*.perspectivev3
+*~.nib
+xcuserdata
+project.xcworkspace
+*.xcuserstate
+*~
+*.lock
+*.DS_Store
+*.swp
+*.out
+bulkloader.*
+
+#java
+*.class
+*.apk
+monkeyboy-android/bin/*
+*.dex
+monkeyboy-android/gen/*
+R.java
+*.cache
+*.filestub
+datastore/*
+
+# PyCharm
+.idea/*
+
+#Komodo
+*.komodoproject
+*.codekit
+
+# Vim with Pymode
+.ropeproject/*
+
+# QA output files: Unit Tests, coverage, ...
+test-reports/*
+ui-test-reports/*
+.coverage
+htmlcov/*
+coverage.xml
+
+# pytest
+.pytest_cache
+
+# virtualenv
+.env
+env/*
+
+# shippable.com
+shippable
+
+# node modules
+node_modules/
+
+# package-lock.json
+package-lock.json
+
+# compiled files
+unicorn/css/dist
+unicorn/vue/dist
