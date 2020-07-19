@@ -1,9 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Dashboard from './Dashboard'
 
 
 function Welcome(props) {
-  return <h1>Hello, {props.name}</h1>;
+  return <Dashboard/>;
 }
 
 const element = <Welcome name="world" />;
