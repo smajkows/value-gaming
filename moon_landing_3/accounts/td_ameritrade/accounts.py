@@ -83,7 +83,9 @@ class TDAmeritradeAccountHandler(TDAmeritrade, AbstractAccountHandler):
         return
 
     def create_transactions_from_api(self, transaction_info):
-        for transaction in transaction_info:
+        # set this should be the same for all transactions
+        account_id = '{}_{}'.format(self.PLATFORM, transaction_info['account_id'])
+        for transaction in transaction_info['transactions']:
             transaction_id = transaction.get('orderId')
             if not transaction_id:
                 print('skipping item no transactionId')
@@ -91,16 +93,9 @@ class TDAmeritradeAccountHandler(TDAmeritrade, AbstractAccountHandler):
 
             id = '{}_{}'.format(self.PLATFORM, transaction_id)
 
-
-            #if ndb.Key(self.TRANSACTION_MODEL, id).get():
-                # transaction is already stored in the system no need to update it
-            #    continue
-
             transaction_item = transaction['transactionItem']
             if not transaction_item:
                 continue
-
-            account_id = '{}_{}'.format(self.PLATFORM, transaction_item['accountId'])
 
             type = transaction['type']
             s_date_str = transaction['settlementDate'].split('T')[0]

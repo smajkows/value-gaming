@@ -57,8 +57,10 @@ class TDAmeritradeAuth(object):
         headers = {
             'Authorization': 'Bearer {}'.format(access_token)
         }
+
         transaction_list = requests.get(url, headers=headers).json()
-        return transaction_list
+        transaction_object = {'account_id': account_id, 'transactions': transaction_list}
+        return transaction_object
 
 
     def get_account_balances(self, access_token, account_id, positions=True):
