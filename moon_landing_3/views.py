@@ -193,6 +193,15 @@ class AuthCallbackFactory(View):
     }
 
 
+class ReactApp(View):
+    template = 'react.html'
+
+    def get(self, request):
+        context = {}
+        template = loader.get_template(self.template)
+        return HttpResponse(template.render(context, request))
+
+
 class AccountPageHandler(View):
     template = 'account_page.html'
 

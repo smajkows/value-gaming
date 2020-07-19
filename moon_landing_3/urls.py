@@ -17,10 +17,11 @@ from django.contrib import admin
 from django.urls import path
 
 from moon_landing_3.views import landing, login, AuthHandler, AuthCallbackHandler, datastore_test_page, HomePageHandler,\
-    DailyAccountPoll, LeaderboardPageHandler, AccountPageHandler
+    DailyAccountPoll, LeaderboardPageHandler, AccountPageHandler, ReactApp
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('react/', ReactApp.as_view()),
     path('home', HomePageHandler.as_view()),
     path('', landing),
     path('login/', login),
