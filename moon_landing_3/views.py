@@ -18,9 +18,33 @@ firebase_request_adapter = requests.Request()
 client = datastore.Client()
 
 
+class HomePageJson(View):
+
+    def get(self, request):
+        accounts_list = []
+        id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
+        # TODO: refactor user check into a decorator
+        if id_token:
+            try:
+                claims = google.oauth2.id_token.verify_firebase_token(
+                    id_token, firebase_request_adapter)
+                query = client.query(kind='NdbAccount')
+                query = query.add_filter('user_id', '=', claims['user_id'])
+                accounts = query.fetch()
+            except ValueError as exc:
+                error_message = str(exc)
+        print(id_token)
+        for account in accounts:
+            accounts_list.append({'platform': account['platform'], 'account_name': account['account_name'],
+                                  'balance': account['current_balance']})
+        print(accounts_list)
+        context = {'accounts': accounts_list}
+        return HttpResponse(json.dumps(context))
+
+
 # TODO: protect this handler by login required
 class HomePageHandler(View):
-    template = 'profile.html'
+    template = 'react.html'
 
     def get(self, request):
         profiles = []
@@ -44,7 +68,7 @@ class HomePageHandler(View):
 
 # TODO: protect this handler by login required
 class LeaderboardPageHandler(View):
-    template = 'leaderboard.html'
+    template = 'react.html'
 
     def get(self, request):
         profiles = []
@@ -64,6 +88,30 @@ class LeaderboardPageHandler(View):
 
         raise PermissionDenied  # If we don't have a user return a 403 error
 
+
+class LeaderboardPageHandler2(View):
+
+    def get(self, request):
+        profiles_json = []
+        id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
+        # TODO: refactor user check into a decorator
+        if id_token:
+            try:
+                claims = google.oauth2.id_token.verify_firebase_token(
+                    id_token, firebase_request_adapter)
+                query = client.query(kind='NdbAccount', order=('current_balance',))  # This will need to be ordered and adjusted based on the value/gain
+                profiles = query.fetch()
+            except ValueError as exc:
+                error_message = str(exc)
+            for profile in profiles:
+                print(profile)
+                print(type(profile))
+                profiles_json.append({'platform': profile['platform'], 'account_id': profile['account_id'],
+                                     'account_name': profile['account_name'], 'value': profile['current_balance'],
+                                      'link': '/account/page/' + profile['platform'] + '_' + profile['account_id']})
+            return HttpResponse(json.dumps(profiles_json))
+
+        raise PermissionDenied  # If we don't have a user return a 403 error
 
 def landing(request):
     template = loader.get_template('base.html')
@@ -192,18 +240,181 @@ class AuthCallbackFactory(View):
         'amtrade': TDAmeritradeCallbackHandler()
     }
 
+class ReactAppHome(View):
+    template = 'react.html'
+
+    def get(self, request):
+        template = loader.get_template(self.template)
+        context = {}
+        return HttpResponse(template.render(context, request))
 
 class ReactApp(View):
     template = 'react.html'
 
-    def get(self, request):
-        context = {}
+    def get(self, request, account_id):
         template = loader.get_template(self.template)
+
+        query = client.query(kind='NdbDailyAccountStats', order=('date',))
+        query = query.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
+        daily_stats = query.fetch()
+
+        query2 = client.query(kind='NdbTransaction', order=('-transaction_date',))
+        query2 = query2.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
+        transactions_fetch = query2.fetch()
+
+        daily_stats_labels = []
+        daily_stats_balances = []
+
+        one_week_labels = []
+        one_week_balances = []
+
+        one_month_labels = []
+        one_month_balances = []
+
+        one_year_labels = []
+        one_year_balances = []
+
+        positions = []
+        transactions = []
+
+        today = datetime.today()
+
+        for transaction in transactions_fetch:
+            if transaction['amount'] and transaction['cost'] <= 0:  # change this heruist should be done when polling
+                transactions.append({'instruction': transaction['instruction'],
+                                     'type': transaction['type'],
+                                     'transaction_date': transaction['transaction_date'],
+                                     'symbol': transaction['symbol'],
+                                     'amount': transaction['amount'],
+                                     'price': transaction['price'],
+                                     'cost': transaction['cost']})
+        for daily in daily_stats:
+            if daily.get('positions'):
+                positions = daily.get('positions').decode('utf-8')
+
+            label = daily['date'].strftime("%m/%d/%Y")
+            balance = daily['balance']
+            daily_date = daily['date'].replace(tzinfo=None)
+
+            if daily_date > today - timedelta(days=7):
+                one_week_labels.append(label)
+                one_week_balances.append(balance)
+
+            if daily_date > today - timedelta(days=30):
+                one_month_labels.append(label)
+                one_month_balances.append(balance)
+
+            if daily_date > today - timedelta(days=365):
+                one_year_labels.append(label)
+                one_year_balances.append(balance)
+
+            daily_stats_labels.append(label)
+            daily_stats_balances.append(balance)
+
+        json_positions = json.loads(positions)
+
+        week_gain = (one_week_balances[-1] - one_week_balances[0]) / one_week_balances[0] if one_week_balances[0] else 0
+        month_gain = (one_month_balances[-1] - one_month_balances[0]) / one_month_balances[0] if one_month_balances[
+            0] else 0
+        year_gain = (one_year_balances[-1] - one_year_balances[1]) / one_year_balances[1]
+        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[1]) / daily_stats_balances[1]
+
+        context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
+                   'transactions': transactions, 'one_week_labels': one_week_labels,
+                   'one_week_balances': one_week_balances,
+                   'one_month_labels': one_month_labels, 'one_month_balances': one_month_balances,
+                   'one_year_labels': one_year_labels,
+                   'one_year_balances': one_year_balances, 'week_gain': "{:.2%}".format(week_gain),
+                   'month_gain': "{:.2%}".format(month_gain),
+                   'year_gain': "{:.2%}".format(year_gain), 'alltime_gain': "{:.2%}".format(alltime_gain)}
+
         return HttpResponse(template.render(context, request))
 
 
+class AccountDataHandler(View):
+
+    def get(self, request, account_id):
+        query = client.query(kind='NdbDailyAccountStats', order=('date',))
+        query = query.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
+        daily_stats = query.fetch()
+
+        query2 = client.query(kind='NdbTransaction', order=('-transaction_date',))
+        query2 = query2.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
+        transactions_fetch = query2.fetch()
+
+
+        daily_stats_labels = []
+        daily_stats_balances = []
+
+        one_week_labels = []
+        one_week_balances = []
+
+        one_month_labels = []
+        one_month_balances = []
+
+        one_year_labels = []
+        one_year_balances = []
+
+        positions = []
+        transactions = []
+
+        today = datetime.today()
+
+        for transaction in transactions_fetch:
+            if transaction['amount'] and transaction['cost'] <= 0:  # change this heruist should be done when polling
+                transactions.append({'instruction': transaction['instruction'],
+                                     'type': transaction['type'],
+                                     'transaction_date': transaction['transaction_date'].strftime("%m/%d/%Y"),
+                                     'symbol': transaction['symbol'],
+                                     'amount': transaction['amount'],
+                                     'price': transaction['price'],
+                                     'cost': transaction['cost']})
+        daily_data_chart = []
+
+        for daily in daily_stats:
+            if daily.get('positions'):
+                positions = daily.get('positions').decode('utf-8')
+
+            label = daily['date'].strftime("%m/%d/%Y")
+            balance = daily['balance']
+            daily_date = daily['date'].replace(tzinfo=None)
+
+
+
+            if daily_date > today - timedelta(days=7):
+                one_week_labels.append(label)
+                one_week_balances.append(balance)
+                daily_data_chart.append({'time': label, 'amount': balance})
+
+            if daily_date > today - timedelta(days=30):
+                one_month_labels.append(label)
+                one_month_balances.append(balance)
+
+            if daily_date > today - timedelta(days=365):
+                one_year_labels.append(label)
+                one_year_balances.append(balance)
+
+            daily_stats_labels.append(label)
+            daily_stats_balances.append(balance)
+
+        json_positions = json.loads(positions)
+
+        week_gain = (one_week_balances[-1] - one_week_balances[0])/one_week_balances[0] if one_week_balances[0] else 0
+        month_gain = (one_month_balances[-1] - one_month_balances[0])/one_month_balances[0] if one_month_balances[0] else 0
+        year_gain = (one_year_balances[-1] - one_year_balances[1])/one_year_balances[1]
+        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[1])/daily_stats_balances[1]
+
+        context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
+                   'transactions': transactions, 'one_week_labels': one_week_labels, 'one_week_balances': one_week_balances,
+                   'one_month_labels': one_month_labels, 'one_month_balances': one_month_balances, 'one_year_labels': one_year_labels,
+                   'one_year_balances': one_year_balances, 'week_gain': "{:.2%}".format(week_gain), 'month_gain': "{:.2%}".format(month_gain),
+                   'year_gain': "{:.2%}".format(year_gain), 'alltime_gain': "{:.2%}".format(alltime_gain), 'daily_data_chart': daily_data_chart}
+
+        return HttpResponse(json.dumps(context))
+
+
 class AccountPageHandler(View):
-    template = 'account_page.html'
+    template = 'react.html'
 
     def get(self, request, account_id):
         template = loader.get_template(self.template)

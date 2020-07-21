@@ -17,18 +17,23 @@ from django.contrib import admin
 from django.urls import path
 
 from moon_landing_3.views import landing, login, AuthHandler, AuthCallbackHandler, datastore_test_page, HomePageHandler,\
-    DailyAccountPoll, LeaderboardPageHandler, AccountPageHandler, ReactApp
+    DailyAccountPoll, LeaderboardPageHandler, LeaderboardPageHandler2, AccountPageHandler, ReactApp, ReactAppHome, AccountDataHandler,\
+    HomePageJson
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('react/', ReactApp.as_view()),
-    path('home', HomePageHandler.as_view()),
+    #path('', ReactAppHome.as_view()),
     path('', landing),
+    path('login/', login),
+    path('home', HomePageHandler.as_view()),
+    path('home_accounts/', HomePageJson.as_view()),
     path('login/', login),
     path('datastore-tester', datastore_test_page),
     path('auth/<str:platform>/', AuthHandler.as_view()),
     path('callback/<str:platform>', AuthCallbackHandler.as_view()),
     path('daily/account_poll', DailyAccountPoll.as_view()),
     path('leaderboard', LeaderboardPageHandler.as_view()),
+    path('account_data/<str:account_id>', AccountDataHandler.as_view()),
+    path('leaderboard2', LeaderboardPageHandler2.as_view()),
     path('account/page/<str:account_id>', AccountPageHandler.as_view())
 ]

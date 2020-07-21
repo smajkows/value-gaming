@@ -20,3 +20,5 @@ __pycache__/
 /srv
 /env
 /opt
+
+node_modules/

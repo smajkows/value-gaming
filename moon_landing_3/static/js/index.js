@@ -1,13 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Dashboard from './Dashboard'
+import Base from './Base'
 
 
-function Welcome(props) {
-  return <Dashboard/>;
+function Welcome(props)  {
+  return <Base/>;
 }
 
-const element = <Welcome name="world" />;
+const element = <Welcome/>;
+
 ReactDOM.render(
   element,
   document.getElementById('react')
