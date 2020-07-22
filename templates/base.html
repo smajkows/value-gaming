@@ -1,39 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Landing</title>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'login.css' %}">
-        <!-- The core Firebase JS SDK is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-app.js"></script>
-
-    <!-- TODO: Add SDKs for Firebase products that you want to use
-         https://firebase.google.com/docs/web/setup#available-libraries -->
-    <script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-analytics.js"></script>
-
-    <link href="//cdn.muicss.com/mui-0.10.3/css/mui.min.css" rel="stylesheet" type="text/css" />
-    <script src="//cdn.muicss.com/mui-0.10.3/js/mui.min.js"></script>
-
-    <script>
-      // Your web app's Firebase configuration
-      var firebaseConfig = {
-        apiKey: "AIzaSyCVoNcuKeb_1Pyer_7OWgZLzBMJktOmoCs",
-        authDomain: "project-moon-landing.firebaseapp.com",
-        databaseURL: "https://project-moon-landing.firebaseio.com",
-        projectId: "project-moon-landing",
-        storageBucket: "project-moon-landing.appspot.com",
-        messagingSenderId: "858100056639",
-        appId: "1:858100056639:web:803c0797ff99668fb7ee8a",
-        measurementId: "G-2LRYDWY7D7"
-      };
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig);
-      firebase.analytics();
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
 </head>
 
 <body>
@@ -90,7 +57,7 @@
           //firebase.auth.PhoneAuthProvider.PROVIDER_ID
 
         ],
-        // credentialHelper: firebaseui.auth.CredentialHelper.NONE,
+        credentialHelper: firebaseui.auth.CredentialHelper.NONE,
         // Terms of service url.
         tosUrl: '<your-tos-url>'
       };

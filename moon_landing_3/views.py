@@ -25,19 +25,13 @@ class HomePageJson(View):
         id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
         # TODO: refactor user check into a decorator
         if id_token:
-            try:
-                claims = google.oauth2.id_token.verify_firebase_token(
-                    id_token, firebase_request_adapter)
-                query = client.query(kind='NdbAccount')
-                query = query.add_filter('user_id', '=', claims['user_id'])
-                accounts = query.fetch()
-            except ValueError as exc:
-                error_message = str(exc)
-        print(id_token)
-        for account in accounts:
-            accounts_list.append({'platform': account['platform'], 'account_name': account['account_name'],
-                                  'balance': account['current_balance']})
-        print(accounts_list)
+            claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
+            query = client.query(kind='NdbAccount')
+            query = query.add_filter('user_id', '=', claims['user_id'])
+            accounts = query.fetch()
+            for account in accounts:
+                accounts_list.append({'platform': account['platform'], 'account_name': account['account_name'],
+                                      'balance': account['current_balance']})
         context = {'accounts': accounts_list}
         return HttpResponse(json.dumps(context))
 
@@ -92,35 +86,30 @@ class LeaderboardPageHandler(View):
 class LeaderboardPageHandler2(View):
 
     def get(self, request):
+        # TODO: return 403 message to non-users , id_token = request.COOKIES.get('token')
         profiles_json = []
         id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
         # TODO: refactor user check into a decorator
         if id_token:
-            try:
-                claims = google.oauth2.id_token.verify_firebase_token(
-                    id_token, firebase_request_adapter)
-                query = client.query(kind='NdbAccount', order=('current_balance',))  # This will need to be ordered and adjusted based on the value/gain
-                profiles = query.fetch()
-            except ValueError as exc:
-                error_message = str(exc)
+            query = client.query(kind='NdbAccount', order=('current_balance',))  # adjust based on gain/loss
+            profiles = query.fetch()
             for profile in profiles:
-                print(profile)
-                print(type(profile))
                 profiles_json.append({'platform': profile['platform'], 'account_id': profile['account_id'],
-                                     'account_name': profile['account_name'], 'value': profile['current_balance'],
+                                      'account_name': profile['account_name'], 'value': profile['current_balance'],
                                       'link': '/account/page/' + profile['platform'] + '_' + profile['account_id']})
             return HttpResponse(json.dumps(profiles_json))
 
-        raise PermissionDenied  # If we don't have a user return a 403 error
+        raise PermissionDenied
+
 
 def landing(request):
-    template = loader.get_template('base.html')
+    template = loader.get_template('react.html')
     context = {}
     return HttpResponse(template.render(context, request))
 
 
 def login(request):
-    template = loader.get_template('login.html')
+    template = loader.get_template('react.html')
     context = {}
     return HttpResponse(template.render(context, request))
 

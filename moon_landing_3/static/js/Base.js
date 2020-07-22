@@ -18,6 +18,21 @@ import {BrowserRouter as Router, Route} from "react-router-dom";
 import Leaderboard from "./Leaderboard";
 import Dashboard from "./Dashboard";
 import Home from "./Home";
+import Landing from "./Landing";
+
+
+
+// Firebase Config
+var firebaseConfig = {
+  apiKey: "AIzaSyCVoNcuKeb_1Pyer_7OWgZLzBMJktOmoCs",
+  authDomain: "project-moon-landing.firebaseapp.com",
+  databaseURL: "https://project-moon-landing.firebaseio.com",
+  projectId: "project-moon-landing",
+  storageBucket: "project-moon-landing.appspot.com",
+  messagingSenderId: "858100056639",
+  appId: "1:858100056639:web:803c0797ff99668fb7ee8a",
+  measurementId: "G-2LRYDWY7D7"
+};
 
 function Copyright() {
   return (
@@ -167,6 +182,7 @@ export default function Base() {
                 <Route path="/leaderboard" component={Leaderboard} />
                 <Route path="/home" component={Home}/>
                 <Route path="/callback/:platform" component={Home}/>
+                <Route path="/" component={Landing}/>
               </div>
             </Router>
         </Container>
