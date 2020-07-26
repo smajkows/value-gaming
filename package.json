@@ -1,0 +1,44 @@
+{
+  "name": "moon_landing_3",
+  "version": "1.0.0",
+  "description": "react frontend",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.config.js --progress --colors --mode development",
+    "watch": "webpack --config webpack.config.js --watch --mode development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smajkows/project-moon-landing.git"
+  },
+  "author": "smajkowski11@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smajkows/project-moon-landing/issues"
+  },
+  "homepage": "https://github.com/smajkows/project-moon-landing#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "webpack": "^4.43.0",
+    "webpack-bundle-tracker": "^0.4.3",
+    "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
+    "clsx": "^1.1.1",
+    "firebase": "^7.16.1",
+    "firebaseui": "^4.6.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-firebaseui": "^4.1.0",
+    "react-router-dom": "^5.2.0",
+    "recharts": "^1.8.5"
+  }
+}
