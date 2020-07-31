@@ -13,9 +13,35 @@ import google.oauth2.id_token
 from datetime import datetime, timedelta, timezone
 import json
 from django.shortcuts import redirect
+from plaid import Client
+
+plaid_client = Client(
+  client_id='5f234883d6e09e001026beb2',
+  secret='e69d71b3a2d3e2d860aae641a91776',
+  environment='sandbox',
+  api_version='2019-05-29'  # Specify API version
+)
 
 firebase_request_adapter = requests.Request()
 client = datastore.Client()
+
+
+class PlaidToken(View):
+    def get(self, request):
+        response = plaid_client.LinkToken.create(
+            {
+                'user': {
+                    # This should correspond to a unique id for the current user.
+                    'client_user_id': 'user-id',
+                },
+                'client_name': "Moon Landing",
+                'products': ['investments', 'transactions'],
+                'country_codes': ['US'],
+                'language': "en",
+            }
+        )
+        print(response)
+        return HttpResponse(json.dumps(response['link_token']))
 
 
 class HomePageJson(View):

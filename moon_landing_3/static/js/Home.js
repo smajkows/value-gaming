@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem"
@@ -6,7 +6,10 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Button from "@material-ui/core/Button";
 import AddIcon from '@material-ui/icons/Add';
-import ListSubheader from "@material-ui/core/ListSubheader"
+import ListSubheader from "@material-ui/core/ListSubheader";
+import AccountConnect from "./AccountConnect";
+import axios from 'axios';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,6 +23,7 @@ const useStyles = makeStyles((theme) => ({
 function ListItemLink(props) {
   return <ListItem button component="a" {...props} />;
 }
+
 
 class AccountsList extends React.Component {
 
@@ -67,8 +71,15 @@ class AccountsList extends React.Component {
     }
 }
 
+
 export default function Home() {
     const classes = useStyles();
+    const [token, setToken] = useState('');
+
+
+    useEffect(() => {
+        axios.get('/plaid/token').then(response => setToken(response['data']));
+    }, []);
 
     return (
         <React.Fragment>
@@ -77,6 +88,9 @@ export default function Home() {
           <AddIcon />
           TD Ameritrade
         </Button>
+
+        <AccountConnect token={token}/>
+
         <div className={classes.root} style={{margin: "20px"}}>
 
           <List component="nav" aria-label="main mailbox folders">
