@@ -63,47 +63,37 @@ class PlaidAccountHandler(AbstractAccountHandler):
         self.create_daily_stats_from_api(balance_info)
         transaction_info = plaid_client.InvestmentTransactions.get(access_token, '2000-01-01', today_str,
                                                 _options=None, account_ids=[account.account_id])
-        print('-------------------')
-        print(transaction_info)
-        print('-------------------')
-        #self.create_transactions_from_api(transaction_info)
+        securities = {}
+        for security in transaction_info['securities']:
+            securities.update({
+                security['security_id']: security
+            })
+        self.create_transactions_from_api(transaction_info, securities)
         return
 
-    def create_transactions_from_api(self, transaction_info):
-        return
+    def create_transactions_from_api(self, transaction_info, securities):
         # set this should be the same for all transactions
-        account_id = '{}_{}'.format(self.PLATFORM, transaction_info['account_id'])
-        for transaction in transaction_info['transactions']:
-            transaction_id = transaction.get('orderId')
-            if not transaction_id:
-                print('skipping item no transactionId')
-                continue
-
+        for transaction in transaction_info['investment_transactions']:
+            account_id = '{}_{}'.format(self.PLATFORM, transaction['account_id'])
+            transaction_id = transaction.get('investment_transaction_id')
             id = '{}_{}'.format(self.PLATFORM, transaction_id)
 
-            transaction_item = transaction['transactionItem']
-            if not transaction_item:
-                continue
-
             type = transaction['type']
-            s_date_str = transaction['settlementDate'].split('T')[0]
+            s_date_str = transaction['date']
             settlement_date = datetime.datetime.strptime(s_date_str, '%Y-%m-%d')
-            print('settlement date: {}'.format(settlement_date))
 
-            t_date_str = transaction['transactionDate'].split('T')[0]
+            t_date_str = transaction['date']
             transaction_date = datetime.datetime.strptime(t_date_str, '%Y-%m-%d')
+            description = transaction['name']
 
-            transaction_id = str(transaction['transactionId'])
-            description = transaction['description']
+            amount = transaction['quantity']
+            price = transaction['price']
+            cost = transaction['amount']
+            instruction = transaction.get('subtype', None)
+            security_id = transaction['security_id']
 
-            amount = transaction_item.get('amount', None)
-            price = transaction_item.get('price', None)
-            cost = transaction_item['cost']
-            instruction = transaction_item.get('instruction', None)
-            instrument = transaction_item.get('instrument')
-
-            symbol = instrument['symbol'] if instrument else None
-            asset_type = instrument['assetType'] if instrument else None
+            symbol = securities[security_id]['ticker_symbol']
+            asset_type = securities[security_id]['type']
 
             if ndb.Key(self.MODEL, account_id).get():
                 # Only create daily stats for an account if we can find the account it belongs to

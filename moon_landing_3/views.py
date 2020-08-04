@@ -23,12 +23,9 @@ class PlaidAccountCreation(View):
     def post(self, request):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        print(body)
         response = plaid_client.Item.public_token.exchange(body['token']) # use plaid client to get perm access token
         access_token = response['access_token']  #this access token shouldn't expire
         item_id = response['item_id']  # the item_id for the access token
-        print('Persistant access token {}'.format(access_token))
-        print('item id {}'.format(item_id))
         account_handler = AccountHandlerFactory.get_handler('plaid')
         # TODO: refactor user check into a decorator
         id_token = request.COOKIES.get('token')  # None #  request.get("token")
@@ -36,25 +33,7 @@ class PlaidAccountCreation(View):
             claims = google.oauth2.id_token.verify_firebase_token(
                 id_token, firebase_request_adapter)
             account_handler.create_accounts_from_api(body, item_id, claims['user_id'], access_token)
-
-        """
-        {'token': 'public-development-cf716b8f-d1e9-45c5-8cd5-1371324289f1', 'metadata': {'institution': {'name': 'Robinhood', 'institution_id': 'ins_54'}, 'account': {'id': None, 'name': None, 'type': None, 'subtype': None, 'mask': None}, 'account_id': None, 'accounts': [{'id': 'nPNjwoLNYvF4DXrapEmKCmA1BVZ1eLtAxP8Dm', 'name': 'Brokerage Account - 6309', 'mask': '6309', 'type': 'investment', 'subtype': 'brokerage'}], 'link_session_id': '8150dfe2-fa58-47e0-8f7c-b60b4101e88f', 'public_token': 'public-development-cf716b8f-d1e9-45c5-8cd5-1371324289f1'}}
-        """
         return HttpResponse()
-
-
-class TestPlaidAccountPolling(View):
-
-    def get(self, request):
-        query = client.query(kind='NdbAccount')
-        query = query.add_filter('platform_id', '=', 'ins_54')
-        accounts = query.fetch()
-        for account in accounts:
-            plaid_item = client.get(account['plaid_item_entity'])
-            print(plaid_item)
-            response = plaid_client.InvestmentTransactions.get(plaid_item['access_token'], '2000-01-01','2020-08-01',
-                                                               _options=None,account_ids=[account['account_id']])
-            print(response)
 
 
 class PlaidToken(View):

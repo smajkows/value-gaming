@@ -35,7 +35,7 @@ const AccountConnect = props => {
         onExit={onExit}
         onSuccess={onSuccess}
         onEvent={onEvent}
-        env="sandbox"
+        env="development"
       >
         Click to Connect Brokerage Account
       </PlaidLink>
