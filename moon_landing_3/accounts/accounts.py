@@ -13,17 +13,20 @@ class Account(object):
     open = None  # if the account is still open or not
 
 
+class NdbAccessItem(ndb.PolyModel):
+    access_token = ndb.StringProperty(required=True)
+
+
 class NdbAccount(Account, ndb.PolyModel):
     user_id = ndb.StringProperty(required=True)  # firebase user id: that this account was added under
     account_id = ndb.StringProperty(required=True)  # the id of the account from the platform
-    platform = ndb.StringProperty(required=True)  # the platform this account is from ex: etrade, robinhood etc.
+    platform = ndb.StringProperty(required=True)  # the platform this account was pulled from: plaid, td_ameritrade etc.
+    platform_name = ndb.StringProperty()  # the name of the institution: etrade, robinhood etc.
     current_balance = ndb.FloatProperty()  # the most recent balance of this account
 
     def update_account_balance(self):
         most_recent_stats = NdbDailyAccountStats.query(NdbDailyAccountStats.account == self.key).order("-date").get()
-        print('PRINTING MOST RECENT STATS {}'.format(most_recent_stats))
         self.current_balance = most_recent_stats.balance
-        print(self)
         self.put()
 
 

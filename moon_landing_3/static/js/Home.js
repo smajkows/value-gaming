@@ -83,12 +83,6 @@ export default function Home() {
 
     return (
         <React.Fragment>
-        <h1> Connect your Trading Accounts Below</h1>
-        <Button variant="contained" color="primary" aria-label="add" onClick={e => window.location.href = '/auth/td-ameritrade/'}>
-          <AddIcon />
-          TD Ameritrade
-        </Button>
-
         <AccountConnect token={token}/>
 
         <div className={classes.root} style={{margin: "20px"}}>

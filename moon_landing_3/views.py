@@ -13,35 +13,69 @@ import google.oauth2.id_token
 from datetime import datetime, timedelta, timezone
 import json
 from django.shortcuts import redirect
-from plaid import Client
-
-plaid_client = Client(
-  client_id='5f234883d6e09e001026beb2',
-  secret='e69d71b3a2d3e2d860aae641a91776',
-  environment='sandbox',
-  api_version='2019-05-29'  # Specify API version
-)
+from moon_landing_3.utilities import plaid_client
 
 firebase_request_adapter = requests.Request()
 client = datastore.Client()
 
 
+class PlaidAccountCreation(View):
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        print(body)
+        response = plaid_client.Item.public_token.exchange(body['token']) # use plaid client to get perm access token
+        access_token = response['access_token']  #this access token shouldn't expire
+        item_id = response['item_id']  # the item_id for the access token
+        print('Persistant access token {}'.format(access_token))
+        print('item id {}'.format(item_id))
+        account_handler = AccountHandlerFactory.get_handler('plaid')
+        # TODO: refactor user check into a decorator
+        id_token = request.COOKIES.get('token')  # None #  request.get("token")
+        if id_token:
+            claims = google.oauth2.id_token.verify_firebase_token(
+                id_token, firebase_request_adapter)
+            account_handler.create_accounts_from_api(body, item_id, claims['user_id'], access_token)
+
+        """
+        {'token': 'public-development-cf716b8f-d1e9-45c5-8cd5-1371324289f1', 'metadata': {'institution': {'name': 'Robinhood', 'institution_id': 'ins_54'}, 'account': {'id': None, 'name': None, 'type': None, 'subtype': None, 'mask': None}, 'account_id': None, 'accounts': [{'id': 'nPNjwoLNYvF4DXrapEmKCmA1BVZ1eLtAxP8Dm', 'name': 'Brokerage Account - 6309', 'mask': '6309', 'type': 'investment', 'subtype': 'brokerage'}], 'link_session_id': '8150dfe2-fa58-47e0-8f7c-b60b4101e88f', 'public_token': 'public-development-cf716b8f-d1e9-45c5-8cd5-1371324289f1'}}
+        """
+        return HttpResponse()
+
+
+class TestPlaidAccountPolling(View):
+
+    def get(self, request):
+        query = client.query(kind='NdbAccount')
+        query = query.add_filter('platform_id', '=', 'ins_54')
+        accounts = query.fetch()
+        for account in accounts:
+            plaid_item = client.get(account['plaid_item_entity'])
+            print(plaid_item)
+            response = plaid_client.InvestmentTransactions.get(plaid_item['access_token'], '2000-01-01','2020-08-01',
+                                                               _options=None,account_ids=[account['account_id']])
+            print(response)
+
+
 class PlaidToken(View):
     def get(self, request):
-        response = plaid_client.LinkToken.create(
-            {
-                'user': {
-                    # This should correspond to a unique id for the current user.
-                    'client_user_id': 'user-id',
-                },
-                'client_name': "Moon Landing",
-                'products': ['investments', 'transactions'],
-                'country_codes': ['US'],
-                'language': "en",
-            }
-        )
-        print(response)
-        return HttpResponse(json.dumps(response['link_token']))
+        id_token = request.COOKIES.get('token')
+        if id_token:
+            claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
+            response = plaid_client.LinkToken.create(
+                {
+                    'user': {
+                        # This should correspond to a unique id for the current user.
+                        'client_user_id': claims['user_id'],
+                    },
+                    'client_name': "Moon Landing",
+                    'products': ['investments', 'transactions'],
+                    'country_codes': ['US'],
+                    'language': "en",
+                }
+            )
+            return HttpResponse(json.dumps(response['link_token']))
+        raise PermissionDenied
 
 
 class HomePageJson(View):
@@ -329,10 +363,9 @@ class ReactApp(View):
         json_positions = json.loads(positions)
 
         week_gain = (one_week_balances[-1] - one_week_balances[0]) / one_week_balances[0] if one_week_balances[0] else 0
-        month_gain = (one_month_balances[-1] - one_month_balances[0]) / one_month_balances[0] if one_month_balances[
-            0] else 0
-        year_gain = (one_year_balances[-1] - one_year_balances[1]) / one_year_balances[1]
-        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[1]) / daily_stats_balances[1]
+        month_gain = (one_month_balances[-1] - one_month_balances[0]) / one_month_balances[0] if one_month_balances[0] else 0
+        year_gain = (one_year_balances[-1] - one_year_balances[0]) / one_year_balances[0]
+        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[0]) / daily_stats_balances[0]
 
         context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
                    'transactions': transactions, 'one_week_labels': one_week_labels,
@@ -416,8 +449,8 @@ class AccountDataHandler(View):
 
         week_gain = (one_week_balances[-1] - one_week_balances[0])/one_week_balances[0] if one_week_balances[0] else 0
         month_gain = (one_month_balances[-1] - one_month_balances[0])/one_month_balances[0] if one_month_balances[0] else 0
-        year_gain = (one_year_balances[-1] - one_year_balances[1])/one_year_balances[1]
-        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[1])/daily_stats_balances[1]
+        year_gain = (one_year_balances[-1] - one_year_balances[0])/one_year_balances[0]
+        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[0])/daily_stats_balances[0]
 
         context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
                    'transactions': transactions, 'one_week_labels': one_week_labels, 'one_week_balances': one_week_balances,
@@ -496,8 +529,8 @@ class AccountPageHandler(View):
 
         week_gain = (one_week_balances[-1] - one_week_balances[0])/one_week_balances[0] if one_week_balances[0] else 0
         month_gain = (one_month_balances[-1] - one_month_balances[0])/one_month_balances[0] if one_month_balances[0] else 0
-        year_gain = (one_year_balances[-1] - one_year_balances[1])/one_year_balances[1]
-        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[1])/daily_stats_balances[1]
+        year_gain = (one_year_balances[-1] - one_year_balances[0])/one_year_balances[0]
+        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[0])/daily_stats_balances[0]
 
         context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
                    'transactions': transactions, 'one_week_labels': one_week_labels, 'one_week_balances': one_week_balances,
@@ -514,5 +547,6 @@ class DailyAccountPoll(View):
         accounts_to_poll = NdbAccount.query().fetch()
         for account in accounts_to_poll:
             handler = AccountHandlerFactory.get_handler(account.platform)
-            handler.poll_daily_account_stats(account)
+            if handler:
+                handler.poll_daily_account_stats(account)
         return HttpResponse()
