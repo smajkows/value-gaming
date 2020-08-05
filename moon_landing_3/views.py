@@ -308,14 +308,14 @@ class ReactApp(View):
         today = datetime.today()
 
         for transaction in transactions_fetch:
-            if transaction['amount'] and transaction['cost'] <= 0:  # change this heruist should be done when polling
-                transactions.append({'instruction': transaction['instruction'],
-                                     'type': transaction['type'],
-                                     'transaction_date': transaction['transaction_date'],
-                                     'symbol': transaction['symbol'],
-                                     'amount': transaction['amount'],
-                                     'price': transaction['price'],
-                                     'cost': transaction['cost']})
+            transactions.append({'instruction': transaction['instruction'],
+                                 'type': transaction['type'],
+                                 'transaction_date': transaction['transaction_date'],
+                                 'symbol': transaction['symbol'],
+                                 'amount': transaction['amount'],
+                                 'price': transaction['price'],
+                                 'cost': transaction['cost']})
+
         for daily in daily_stats:
             if daily.get('positions'):
                 positions = daily.get('positions').decode('utf-8')
@@ -388,14 +388,13 @@ class AccountDataHandler(View):
         today = datetime.today()
 
         for transaction in transactions_fetch:
-            if transaction['amount'] and transaction['cost'] <= 0:  # change this heruist should be done when polling
-                transactions.append({'instruction': transaction['instruction'],
-                                     'type': transaction['type'],
-                                     'transaction_date': transaction['transaction_date'].strftime("%m/%d/%Y"),
-                                     'symbol': transaction['symbol'],
-                                     'amount': transaction['amount'],
-                                     'price': transaction['price'],
-                                     'cost': transaction['cost']})
+            transactions.append({'instruction': transaction['instruction'],
+                                 'type': transaction['type'],
+                                 'transaction_date': transaction['transaction_date'].strftime("%m/%d/%Y"),
+                                 'symbol': transaction['symbol'],
+                                 'amount': transaction['amount'],
+                                 'price': transaction['price'],
+                                 'cost': transaction['cost']})
         daily_data_chart = []
 
         for daily in daily_stats:
@@ -473,14 +472,13 @@ class AccountPageHandler(View):
         today = datetime.today()
 
         for transaction in transactions_fetch:
-            if transaction['amount'] and transaction['cost'] <= 0:  # change this heruist should be done when polling
-                transactions.append({'instruction': transaction['instruction'],
-                                     'type': transaction['type'],
-                                     'transaction_date': transaction['transaction_date'],
-                                     'symbol': transaction['symbol'],
-                                     'amount': transaction['amount'],
-                                     'price': transaction['price'],
-                                     'cost': transaction['cost']})
+            transactions.append({'instruction': transaction['instruction'],
+                                 'type': transaction['type'],
+                                 'transaction_date': transaction['transaction_date'],
+                                 'symbol': transaction['symbol'],
+                                 'amount': transaction['amount'],
+                                 'price': transaction['price'],
+                                 'cost': transaction['cost']})
         for daily in daily_stats:
             if daily.get('positions'):
                 positions = daily.get('positions').decode('utf-8')

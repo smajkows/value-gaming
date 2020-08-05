@@ -40,7 +40,7 @@ class PlaidAccountHandler(AbstractAccountHandler):
                           platform_id=account['institution_id'],
                           plaid_item_entity=ndb.Key(PlaidItem, account['item_id']))
         acct.put()
-        return
+        return acct
 
     def create_accounts_from_api(self, api_response, item_id, user_id, access_token):
         for account in api_response['metadata']['accounts']:
@@ -52,7 +52,8 @@ class PlaidAccountHandler(AbstractAccountHandler):
             if not item:
                 item = PlaidItem(id=item_id, access_token=access_token)
                 item.put()
-            self.create_account_from_api(account)
+            account_entity = self.create_account_from_api(account)
+            self.poll_daily_account_stats(account_entity)
         return
 
     def poll_daily_account_stats(self, account):
@@ -132,11 +133,18 @@ class PlaidAccountHandler(AbstractAccountHandler):
 
             for holding in balance_info['holdings']:
                 if holding['account_id'] == account['account_id']:
+                    print("holding for account id {}: {}".format(account['account_id'], holding))
+                    # TODO: remove this hack
+                    try:
+                        average_price = holding.get('cost_basis', 0) / holding['quantity']
+                    except:
+                        average_price = 0
+
                     positions.append({
                         'instrument': {
                             'symbol': security_dict[holding['security_id']]
                         },
-                        'averagePrice': holding['cost_basis'] / holding['quantity'],
+                        'averagePrice': average_price,
                         'longQuantity': holding['quantity'],
                         'marketValue': holding['institution_value'],
                         'currentDayProfitLossPercentage': None
