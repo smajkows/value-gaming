@@ -1,10 +1,11 @@
 from moon_landing_3.accounts.accounts import AbstractAccountHandler, NdbDailyAccountStats, NdbAccount, NdbTransaction, \
     NdbAccessItem
 import datetime
-from google.cloud import ndb
+from google.cloud import datastore, ndb
 from moon_landing_3.utilities import plaid_client
 
 ndb_client = ndb.Client()
+client = datastore.Client()
 
 
 class PlaidItem(NdbAccessItem):
@@ -62,8 +63,20 @@ class PlaidAccountHandler(AbstractAccountHandler):
         today_str = datetime.date.today().strftime("%Y-%m-%d")
         balance_info = plaid_client.Holdings.get(access_token)
         self.create_daily_stats_from_api(balance_info)
-        transaction_info = plaid_client.InvestmentTransactions.get(access_token, '2000-01-01', today_str,
-                                                _options=None, account_ids=[account.account_id])
+        query = client.query(kind='NdbTransaction', order=('-transaction_date',))
+        latest_transactions = query.fetch(1)
+        if not latest_transactions:
+            # if there is no latest transaction on this account set latest date to 2000
+            latest_date = '2000-01-01'
+            print('latest date was none and set to 2000')
+        else:
+            latest_date = '2020-01-01'
+            for item in latest_transactions:
+                latest_date = item['transaction_date'].strftime("%Y-%m-%d")
+                break
+            print('latest date not none {}'.format(latest_date))
+        transaction_info = plaid_client.InvestmentTransactions.get(access_token, latest_date, today_str,
+                                                                   _options=None, account_ids=[account.account_id])
         securities = {}
         for security in transaction_info['securities']:
             securities.update({
