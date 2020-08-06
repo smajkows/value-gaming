@@ -111,7 +111,7 @@ class LeaderboardPageHandler(View):
             try:
                 claims = google.oauth2.id_token.verify_firebase_token(
                     id_token, firebase_request_adapter)
-                query = client.query(kind='NdbAccount', order=('current_balance',))  # This will need to be ordered and adjusted based on the value/gain
+                query = client.query(kind='NdbAccount', order=('-current_balance',))  # This will need to be ordered and adjusted based on the value/gain
                 profiles = query.fetch()
             except ValueError as exc:
                 error_message = str(exc)
@@ -130,7 +130,7 @@ class LeaderboardPageHandler2(View):
         id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
         # TODO: refactor user check into a decorator
         if id_token:
-            query = client.query(kind='NdbAccount', order=('current_balance',))  # adjust based on gain/loss
+            query = client.query(kind='NdbAccount', order=('-current_balance',))  # adjust based on gain/loss
             profiles = query.fetch()
             for profile in profiles:
                 profiles_json.append({'platform': profile['platform'], 'account_id': profile['account_id'],
