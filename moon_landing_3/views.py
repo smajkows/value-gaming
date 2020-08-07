@@ -203,8 +203,8 @@ class LeaderboardPageHandler2(View):
         if id_token:
             query = client.query(kind='NdbAccount', order=('-current_balance',))  # adjust based on gain/loss
             profiles = query.fetch()
-            screen_name = None
             for profile in profiles:
+                screen_name = None
                 if profile['platform'] == 'plaid':
                     moon_landing_user = ndb.Key(NdbUser, profile['user_id']).get()
                     if moon_landing_user:

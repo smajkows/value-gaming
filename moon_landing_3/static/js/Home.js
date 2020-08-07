@@ -7,6 +7,8 @@ import Paper from "@material-ui/core/Paper";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import AccountConnect from "./AccountConnect";
 import AccountList from "./AccountList";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
 import axios from 'axios';
 import Cookies from "js-cookie";
 
@@ -74,11 +76,16 @@ export default function Home() {
               <Paper className={classes.paper}>
                 <div>
                   <form onSubmit={handleSubmit}>
-                    <label>
+                    <TextField id="outlined-basic" label="Update Screename" variant="outlined"
+                    value={newusername} onChange={e => setNewusername(e.target.value)}>
                       Update Your Username:
-                      <input type="text" value={newusername} onChange={e => setNewusername(e.target.value)}/>
-                    </label>
-                    <input type="submit" value="Change" />
+                    </TextField>
+                    <Button
+                        type="submit"
+                        className={classes.button}
+                    >
+                        Update
+                    </Button>
                   </form>
                 <p>
                     {username}
@@ -99,11 +106,6 @@ export default function Home() {
               <Paper className={classes.paper}>News Feed for Followed accounts coming soon!</Paper>
             </Grid>
           </Grid>
-
-
-
-
-
         </React.Fragment>
     )
 }
