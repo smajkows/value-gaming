@@ -2,13 +2,13 @@ import React, {useEffect, useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem"
-import ListItemText from "@material-ui/core/ListItemText";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import Button from "@material-ui/core/Button";
-import AddIcon from '@material-ui/icons/Add';
+import Grid from "@material-ui/core/Grid";
+import Paper from "@material-ui/core/Paper";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import AccountConnect from "./AccountConnect";
+import AccountList from "./AccountList";
 import axios from 'axios';
+import Cookies from "js-cookie";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -16,6 +16,12 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     maxWidth: 360,
     backgroundColor: theme.palette.background.paper,
+  },
+  paper: {
+    padding: theme.spacing(2),
+    display: 'flex',
+    overflow: 'auto',
+    flexDirection: 'column',
   },
 }));
 
@@ -25,74 +31,80 @@ function ListItemLink(props) {
 }
 
 
-class AccountsList extends React.Component {
-
-      constructor() {
-        super();
-          this.state = {
-            isLoading: true,
-            accounts: []
-          }
-      }
-
-    componentDidMount() {
-        // Where we're fetching data from
-      fetch(`/home_accounts`)
-        // We get the API response and receive data in JSON format...
-        .then(response => response.json())
-        // ...then we update the users state
-        .then(data =>
-          this.setState({
-            accounts: data['accounts'],
-            isLoading: false,
-          })
-        )
-        // Catch any errors we hit and update the app
-        .catch(error => this.setState({ error, isLoading: false }));
-    }
-
-    render() {
-        const { accounts } = this.state;
-        var elements = [];
-        for(var i=0;i<accounts.length;i++){
-            elements.push(
-                <ListItem button key={i}>
-                  <ListItemIcon>
-                  </ListItemIcon>
-                  <ListItemText primary={accounts[i]['account_name']} secondary={accounts[i]['balance']} />
-                </ListItem>
-            );
-        }
-        return (
-            <div>
-            {elements}
-            </div>
-        );
-    }
-}
-
-
 export default function Home() {
     const classes = useStyles();
     const [token, setToken] = useState('');
-
+    const [accounts, setAccounts] = useState([]);
+    const[username, setUsername] = useState('');
+    const [newusername, setNewusername] = useState(username);
 
     useEffect(() => {
         axios.get('/plaid/token').then(response => setToken(response['data']));
     }, []);
 
+    useEffect(() => {
+      fetch(`/home_accounts`)
+        .then(response => response.json())
+        .then(data =>{
+            setAccounts(data['accounts']);
+            setUsername(data['username']);
+        });
+    }, []);
+
+    const handleSubmit = (evt) => {
+      evt.preventDefault();
+      const csrftoken = Cookies.get('csrftoken');
+        const firebase_token = Cookies.get('token');  //the firebase token so we can change this users screen name
+        axios.post('/change/username',
+          {
+            username: newusername,
+            firebase_token: firebase_token
+            },
+           {
+               headers: {
+                'X-CSRFToken': csrftoken
+               }
+          }).then(response => setUsername(response['data']['username']));
+    }
+
     return (
         <React.Fragment>
-        <AccountConnect token={token}/>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Paper className={classes.paper}>
+                <div>
+                  <form onSubmit={handleSubmit}>
+                    <label>
+                      Update Your Username:
+                      <input type="text" value={newusername} onChange={e => setNewusername(e.target.value)}/>
+                    </label>
+                    <input type="submit" value="Change" />
+                  </form>
+                <p>
+                    {username}
+                </p>
+                </div>
+              </Paper>
+            </Grid>
+            <Grid item xs={6}>
+                <AccountConnect token={token}/>
+                <div className={classes.root} style={{margin: "20px"}}>
+                  <List component="nav" aria-label="main mailbox folders">
+                      <ListSubheader className={classes.root}>Connected Accounts</ListSubheader>
+                      <AccountList accounts={accounts}/>
+                  </List>
+                </div>
+            </Grid>
+            <Grid item xs={6}>
+              <Paper className={classes.paper}>News Feed for Followed accounts coming soon!</Paper>
+            </Grid>
+          </Grid>
 
-        <div className={classes.root} style={{margin: "20px"}}>
 
-          <List component="nav" aria-label="main mailbox folders">
-              <ListSubheader>Connected Accounts</ListSubheader>
-              <AccountsList/>
-          </List>
-        </div>
+
+
+
         </React.Fragment>
-        )
+    )
 }
 

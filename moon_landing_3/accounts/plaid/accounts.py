@@ -62,6 +62,7 @@ class PlaidAccountHandler(AbstractAccountHandler):
         access_token = profile.access_token
         today_str = datetime.date.today().strftime("%Y-%m-%d")
         balance_info = plaid_client.Holdings.get(access_token)
+        update_webhook = plaid_client.Item.webhook.update(access_token, 'http://project-moon-landing.appspot.com/item/plaid/webhook')
         self.create_daily_stats_from_api(balance_info)
         query = client.query(kind='NdbTransaction', order=('-transaction_date',))
         latest_transactions = query.fetch(1)

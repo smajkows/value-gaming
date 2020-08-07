@@ -130,7 +130,7 @@ class Leaderboard extends React.Component {
               <TableHead>
                 <TableRow>
                   <TableCell>Platform</TableCell>
-                  <TableCell>Account Name</TableCell>
+                  <TableCell>Name</TableCell>
                   <TableCell align="right">Account Value</TableCell>
                 </TableRow>
               </TableHead>
@@ -138,7 +138,7 @@ class Leaderboard extends React.Component {
                 {accounts.map((account) => (
                   <TableRow onClick={e => window.location.href = account.link} key={account.account_id}>
                     <TableCell>{account.platform}</TableCell>
-                    <TableCell >{account.account_name}</TableCell>
+                    <TableCell >{account.display_name}</TableCell>
                     <TableCell align="right">{account.value}</TableCell>
                   </TableRow>
                 ))}

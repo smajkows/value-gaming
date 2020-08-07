@@ -1,26 +1,9 @@
-from django.db import models
+from google.cloud import ndb
 
 
-class User(object):
-    """
-    A user in our system
-    """
-    accounts = []
-    profiles = []
+class NdbUser(ndb.PolyModel):
+    firebase_id = ndb.StringProperty()
+    screen_name = ndb.StringProperty()
+    linked_accounts = ndb.KeyProperty(repeated=True)
 
-
-class UserProfile(object):
-    """
-    User accounts associated with trading platforms like an etrade or Robinhood sign in
-    """
-    type = None  # The trading platform name
-    accounts = []  # The accounts associated with this profile
-
-
-class MoonLandingUser(User):
-    pass
-
-
-class DjangoMoonLandingUser(models.Model, MoonLandingUser):
-    pass
 

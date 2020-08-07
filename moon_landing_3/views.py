@@ -5,6 +5,8 @@ from td_ameritrade_python_client.client import TDAmeritradeAuth
 from moon_landing_3.accounts.utility import AccountHandlerFactory
 from moon_landing_3.accounts.accounts import NdbAccount
 from moon_landing_3.profiles.utility import ProfileHandlerFactory
+from moon_landing_3.accounts.plaid.accounts import PlaidAccount, PlaidItem
+from moon_landing_3.user import NdbUser
 from django.views import View
 from google.auth.transport import requests
 from google.cloud import datastore, ndb
@@ -14,6 +16,7 @@ from datetime import datetime, timedelta, timezone
 import json
 from django.shortcuts import redirect
 from moon_landing_3.utilities import plaid_client
+from django.views.decorators.csrf import csrf_exempt
 
 firebase_request_adapter = requests.Request()
 client = datastore.Client()
@@ -65,16 +68,24 @@ class HomePageJson(View):
         # TODO: refactor user check into a decorator
         if id_token:
             claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
-            query = client.query(kind='NdbAccount')
-            query = query.add_filter('user_id', '=', claims['user_id'])
-            accounts = query.fetch()
+            moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
+            accounts = NdbAccount.query(NdbAccount.user_id == claims['user_id']).fetch()
+            account_keys = []
             for account in accounts:
-                accounts_list.append({'platform': account['platform'], 'account_name': account['account_name'],
-                                      'balance': account['current_balance']})
-        context = {'accounts': accounts_list}
+                account_keys.append(account.key)
+                accounts_list.append({'platform': account.platform, 'account_name': account.account_name,
+                                      'balance': account.current_balance})
+            if not moon_landing_user:
+                moon_landing_user = NdbUser(id=claims['user_id'], firebase_id=claims['user_id'],
+                                            linked_accounts=[account for account in account_keys])
+                moon_landing_user.put()
+        context = {'accounts': accounts_list, 'username': moon_landing_user.screen_name}
         return HttpResponse(json.dumps(context))
 
 
+"""
+
+"""
 # TODO: protect this handler by login required
 class HomePageHandler(View):
     template = 'react.html'
@@ -97,6 +108,66 @@ class HomePageHandler(View):
             return HttpResponse(template.render(context, request))
 
         raise PermissionDenied  # If we don't have a user return a 403 error
+
+
+class ChangeUsername(View):
+
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        requested_username = body['username']
+        id_token = body['firebase_token']
+        context = {}
+        if id_token:
+            try:
+                claims = google.oauth2.id_token.verify_firebase_token(
+                    id_token, firebase_request_adapter)
+                moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
+                moon_landing_user.screen_name = requested_username  # update their username
+                moon_landing_user.put()
+                context = {'username': moon_landing_user.screen_name}
+            except:
+                return HttpResponse(400)
+        return HttpResponse(json.dumps(context))
+
+
+class PlaidTransactionWebhook(View):
+
+    def post(self, request):
+
+        # TODO: validate header, stop process if its not valid
+        """
+        header_unicode = request.header.decode('utf-8')
+        header = json.loads(header_unicode)
+        resp = plaid_client.Webhooks.get_verification_key(header.get('kid'))
+
+
+        if request.POST.get('webhook_type') != 'TRANSACTIONS':
+            # return 400 not the right type of webhook for this handler
+            return HttpResponse(400)
+
+        """
+        item_id = request.POST.get('item_id')
+        print(item_id)
+        if not item_id:
+            # Need item id to continue
+            return HttpResponse(400)
+
+        item = ndb.Key(PlaidItem, item_id).get()
+
+        if not item:
+            # we don't have a matching item for this in the system terminate here
+            return HttpResponse(400)
+
+        # Get all ndb accounts that are linked to this plaid item_id
+        accounts = PlaidAccount.query(PlaidAccount.plaid_item_entity == ndb.Key(PlaidItem, item_id)).fetch()
+        for account in accounts:
+            print('Plaid webhook update happening for {}'.format(item_id))
+            handler = AccountHandlerFactory.get_handler(account.platform)
+            if handler:
+                handler.poll_daily_account_stats(account)
+
+        return HttpResponse()
 
 
 # TODO: protect this handler by login required
@@ -132,9 +203,15 @@ class LeaderboardPageHandler2(View):
         if id_token:
             query = client.query(kind='NdbAccount', order=('-current_balance',))  # adjust based on gain/loss
             profiles = query.fetch()
+            screen_name = None
             for profile in profiles:
+                if profile['platform'] == 'plaid':
+                    moon_landing_user = ndb.Key(NdbUser, profile['user_id']).get()
+                    if moon_landing_user:
+                        screen_name = moon_landing_user.screen_name
+                display_name = screen_name if screen_name else profile['account_name']
                 profiles_json.append({'platform': profile['platform'], 'account_id': profile['account_id'],
-                                      'account_name': profile['account_name'], 'value': profile['current_balance'],
+                                      'display_name': display_name, 'value': profile['current_balance'],
                                       'link': '/account/page/' + profile['platform'] + '_' + profile['account_id']})
             return HttpResponse(json.dumps(profiles_json))
 
@@ -155,17 +232,12 @@ def login(request):
 
 def datastore_test_page(request):
     template = loader.get_template('datastore-test.html')
-    items = client.query(kind='NdbAccount').fetch()
-    daily_account_stats = client.query(kind='NdbDailyAccountStats').fetch()
-    positions = []
-    for account_stat in daily_account_stats:
-        print(account_stat.get('balance'))
-        if account_stat.get('positions'):
-            positions = account_stat.get('positions').decode('utf-8')
-    print(positions)
-    json_positions = json.loads(positions)
-    print(type(json_positions))
-    context = {'items': items, 'daily_account_stats': json_positions}
+    items = client.query(kind='NdbUser').fetch()
+    items_list = []
+    for plaid in items:
+        print('item')
+        items_list.append(plaid)
+    context = {'items': items_list}
     return HttpResponse(template.render(context, request))
 
 
