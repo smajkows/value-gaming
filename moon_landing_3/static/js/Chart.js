@@ -10,17 +10,6 @@ function createData(time, amount) {
   return { time, amount };
 }
 
-const data = [
-  createData('2020-01-01', 0),
-  createData('2020-01-10', 300),
-  createData('06:00', 600),
-  createData('09:00', 800),
-  createData('12:00', 1500),
-  createData('15:00', 2000),
-  createData('18:00', 2400),
-  createData('21:00', 2400),
-];
-
 class Chart extends React.Component {
 
   render() {
@@ -38,7 +27,7 @@ class Chart extends React.Component {
           }}
         >
           <XAxis dataKey="time"/>
-          <YAxis>
+          <YAxis domain={['auto', 'auto']}>
             <Label
               angle={270}
               position="left"
@@ -47,7 +36,7 @@ class Chart extends React.Component {
               Portfolio Value ($)
             </Label>
           </YAxis>
-          <Line type="monotone" dataKey="amount" dot={false} />
+          <Line type="monotone" dataKey="amount" dot={true} />
         </LineChart>
       </ResponsiveContainer>
     </React.Fragment>
