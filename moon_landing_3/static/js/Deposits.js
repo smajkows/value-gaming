@@ -6,6 +6,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import TableBody from "@material-ui/core/TableBody";
+import CurrencyFormat from "react-currency-format";
 
 function preventDefault(event) {
   event.preventDefault();
@@ -25,7 +26,7 @@ class Deposits extends React.Component {
     return (
         <React.Fragment>
           <Title>Recent Trades</Title>
-          <Table size="small">
+          <Table size="medium" stickyHeader aria-label="simple table">
             <TableHead>
               <TableRow>
                 <TableCell>Ticker</TableCell>
@@ -41,7 +42,13 @@ class Deposits extends React.Component {
                     <TableCell>{row.symbol}</TableCell>
                     <TableCell>{row.instruction}</TableCell>
                     <TableCell>{row.transaction_date}</TableCell>
-                    <TableCell>{row.price}</TableCell>
+                    <TableCell>
+                        <CurrencyFormat value={row.price}
+                            displayType={'text'}
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            prefix={'$'} />
+                    </TableCell>
                     <TableCell align="right">{row.amount}</TableCell>
                   </TableRow>
               ))}

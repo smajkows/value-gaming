@@ -1,17 +1,20 @@
 from moon_landing_3.accounts.etrade.accounts import EtradeAccountHandler
 from moon_landing_3.accounts.td_ameritrade.accounts import TDAmeritradeAccountHandler
+from moon_landing_3.accounts.plaid.accounts import PlaidAccountHandler
 
 
 class AccountHandlerFactory(object):
 
     registry = {
         EtradeAccountHandler.PLATFORM: EtradeAccountHandler(),
-        TDAmeritradeAccountHandler.PLATFORM: TDAmeritradeAccountHandler()
+        TDAmeritradeAccountHandler.PLATFORM: TDAmeritradeAccountHandler(),
+        PlaidAccountHandler.PLATFORM: PlaidAccountHandler()
     }
 
     @classmethod
     def get_handler(cls, platform):
         try:
-            return cls.registry[platform]
+            handler = cls.registry[platform]
+            return handler
         except Exception as e:
-            raise Exception("Unable to get handler for platform {} due to {}".format(platform, e))
+            return None

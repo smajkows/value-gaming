@@ -6,6 +6,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
+import CurrencyFormat from "react-currency-format";
 
 function preventDefault(event) {
   event.preventDefault();
@@ -23,8 +24,7 @@ class Orders extends React.Component {
     const holdings = this.props.my_hold;
     return (
         <React.Fragment>
-          <Title>Portfolio Holdings</Title>
-          <Table size="small">
+          <Table size="medium" stickyHeader aria-label="simple table">
             <TableHead>
               <TableRow>
                 <TableCell>Ticker</TableCell>
@@ -38,9 +38,27 @@ class Orders extends React.Component {
               {holdings.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell>{row.instrument.symbol}</TableCell>
-                    <TableCell>{row.averagePrice}</TableCell>
-                    <TableCell>{row.longQuantity}</TableCell>
-                    <TableCell>{row.marketValue}</TableCell>
+                    <TableCell>
+                      <CurrencyFormat value={row.averagePrice}
+                                        displayType={'text'}
+                                        thousandSeparator={true}
+                                        decimalScale={2}
+                                        prefix={'$'} />
+
+                    </TableCell>
+                    <TableCell>
+                      <CurrencyFormat value={row.longQuantity}
+                            displayType={'text'}
+                            thousandSeparator={true}
+                            decimalScale={2}/>
+                    </TableCell>
+                    <TableCell>
+                      <CurrencyFormat value={row.marketValue}
+                            displayType={'text'}
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            prefix={'$'} />
+                    </TableCell>
                     <TableCell align="right">{row.currentDayProfitLossPercentage}</TableCell>
                   </TableRow>
               ))}

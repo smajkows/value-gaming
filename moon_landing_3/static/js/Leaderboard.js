@@ -7,6 +7,9 @@ import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import TableBody from "@material-ui/core/TableBody";
 import Grid from "@material-ui/core/Grid";
+import CurrencyFormat from 'react-currency-format';
+import Paper from '@material-ui/core/Paper';
+import TableContainer from "@material-ui/core/TableContainer";
 import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
@@ -126,24 +129,32 @@ class Leaderboard extends React.Component {
           <Grid container spacing={3}>
             <Grid item xs={12} md={12} lg={12}>
             <Title>Leaderboard</Title>
-            <Table size="medium">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Platform</TableCell>
-                  <TableCell>Account Name</TableCell>
-                  <TableCell align="right">Account Value</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {accounts.map((account) => (
-                  <TableRow onClick={e => window.location.href = account.link} key={account.account_id}>
-                    <TableCell>{account.platform}</TableCell>
-                    <TableCell >{account.account_name}</TableCell>
-                    <TableCell align="right">{account.value}</TableCell>
+            <TableContainer component={Paper}>
+              <Table size="medium" stickyHeader aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Platform</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell align="right">Account Value</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {accounts.map((account) => (
+                    <TableRow onClick={e => window.location.href = account.link} key={account.account_id}>
+                      <TableCell>{account.platform}</TableCell>
+                      <TableCell >{account.display_name}</TableCell>
+                      <TableCell align="right">
+                        <CurrencyFormat value={account.value}
+                                        displayType={'text'}
+                                        thousandSeparator={true}
+                                        decimalScale={2}
+                                        prefix={'$'} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
             </Grid>
           </Grid>
     </React.Fragment>

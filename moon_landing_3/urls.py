@@ -15,15 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
 from moon_landing_3.views import landing, login, AuthHandler, AuthCallbackHandler, datastore_test_page, HomePageHandler,\
     DailyAccountPoll, LeaderboardPageHandler, LeaderboardPageHandler2, AccountPageHandler, ReactApp, ReactAppHome, AccountDataHandler,\
-    HomePageJson
+    HomePageJson, PlaidToken, PlaidAccountCreation, PlaidTransactionWebhook, ChangeUsername
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('', ReactAppHome.as_view()),
     path('', login),
+    path('change/username', ChangeUsername.as_view()),
+    path('item/plaid/webhook', csrf_exempt(PlaidTransactionWebhook.as_view())),
+    path('account_creation', PlaidAccountCreation.as_view()),
+    path('plaid/token', PlaidToken.as_view()),
     path('login/', login),
     path('home', HomePageHandler.as_view()),
     path('home_accounts/', HomePageJson.as_view()),
