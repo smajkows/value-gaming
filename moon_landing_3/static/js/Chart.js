@@ -2,6 +2,8 @@ import React from 'react';
 import { useTheme } from '@material-ui/core/styles';
 import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
 import Title from './Title';
+import CurrencyFormat from "react-currency-format";
+import TableCell from "@material-ui/core/TableCell";
 
 // Generate Sales Data
 function createData(time, amount) {
@@ -24,7 +26,7 @@ class Chart extends React.Component {
   render() {
   return (
     <React.Fragment>
-      <Title>Today:  {this.props.daily_gain}</Title>
+      <Title>Today: {this.props.daily_gain} </Title>
       <ResponsiveContainer>
         <LineChart
           data={this.props.chartdata}

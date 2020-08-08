@@ -255,7 +255,8 @@ class LeaderboardPageHandler2(View):
                 display_name = screen_name if screen_name else account.account_name
                 profiles_json.append({'platform': account.platform, 'account_id': account.account_id,
                                       'display_name': display_name, 'value': account.current_balance,
-                                      'link': '/account/page/' + account.platform + '_' + account.account_id})
+                                      'link': '/account/page/' + account.platform + '_' + account.account_id,
+                                      'platform_name': account.platform_name})
             return HttpResponse(json.dumps(profiles_json))
 
         raise PermissionDenied
@@ -468,7 +469,7 @@ class AccountDataHandler(View):
 
         context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
                    'account_name': account.account_screen_name, 'followers': len(account.followers),
-                   'follow_status': follow_status, 'account_id': account_id,
+                   'follow_status': follow_status, 'account_id': account_id, 'current_balance': account.current_balance,
                    'transactions': transactions, 'one_week_labels': one_week_labels, 'one_week_balances': one_week_balances,
                    'one_month_labels': one_month_labels, 'one_month_balances': one_month_balances, 'one_year_labels': one_year_labels,
                    'one_year_balances': one_year_balances, 'week_gain': "{:.2%}".format(week_gain), 'month_gain': "{:.2%}".format(month_gain),
