@@ -46,7 +46,12 @@ class Orders extends React.Component {
                                         prefix={'$'} />
 
                     </TableCell>
-                    <TableCell>{row.longQuantity}</TableCell>
+                    <TableCell>
+                      <CurrencyFormat value={row.longQuantity}
+                            displayType={'text'}
+                            thousandSeparator={true}
+                            decimalScale={2}/>
+                    </TableCell>
                     <TableCell>
                       <CurrencyFormat value={row.marketValue}
                             displayType={'text'}
