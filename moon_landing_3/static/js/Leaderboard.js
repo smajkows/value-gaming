@@ -144,7 +144,11 @@ class Leaderboard extends React.Component {
                       <TableCell>{account.platform}</TableCell>
                       <TableCell >{account.display_name}</TableCell>
                       <TableCell align="right">
-                        <CurrencyFormat value={account.value} displayType={'text'} thousandSeparator={true} prefix={'$'} />
+                        <CurrencyFormat value={account.value}
+                                        displayType={'text'}
+                                        thousandSeparator={true}
+                                        decimalScale={2}
+                                        prefix={'$'} />
                       </TableCell>
                     </TableRow>
                   ))}

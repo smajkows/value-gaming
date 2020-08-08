@@ -6,6 +6,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Title from './Title';
+import CurrencyFormat from "react-currency-format";
 
 function preventDefault(event) {
   event.preventDefault();
@@ -37,9 +38,22 @@ class Orders extends React.Component {
               {holdings.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell>{row.instrument.symbol}</TableCell>
-                    <TableCell>{row.averagePrice}</TableCell>
+                    <TableCell>
+                      <CurrencyFormat value={row.averagePrice}
+                                        displayType={'text'}
+                                        thousandSeparator={true}
+                                        decimalScale={2}
+                                        prefix={'$'} />
+
+                    </TableCell>
                     <TableCell>{row.longQuantity}</TableCell>
-                    <TableCell>{row.marketValue}</TableCell>
+                    <TableCell>
+                      <CurrencyFormat value={row.marketValue}
+                            displayType={'text'}
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            prefix={'$'} />
+                    </TableCell>
                     <TableCell align="right">{row.currentDayProfitLossPercentage}</TableCell>
                   </TableRow>
               ))}

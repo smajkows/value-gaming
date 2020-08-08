@@ -17,7 +17,9 @@ class AccountList extends React.Component {
                   <ListItemIcon>
                   </ListItemIcon>
                   <ListItemText primary={accounts[i]['account_name']}
-                                secondary={<CurrencyFormat value={accounts[i]['balance']} displayType={'text'} thousandSeparator={true} prefix={'$'} />}/>
+                                secondary={<CurrencyFormat value={accounts[i]['balance']} displayType={'text'}
+                                                           thousandSeparator={true}
+                                                           prefix={'$'} decimalScale={2}/>}/>
                 </ListItem>
             );
         }
