@@ -23,8 +23,7 @@ class Orders extends React.Component {
     const holdings = this.props.my_hold;
     return (
         <React.Fragment>
-          <Title>Portfolio Holdings</Title>
-          <Table size="small">
+          <Table size="medium" stickyHeader aria-label="simple table">
             <TableHead>
               <TableRow>
                 <TableCell>Ticker</TableCell>

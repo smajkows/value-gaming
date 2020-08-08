@@ -2,6 +2,9 @@ import React from "react";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
+import CurrencyFormat from "react-currency-format";
+import TableCell from "@material-ui/core/TableCell";
+
 
 class AccountList extends React.Component {
 
@@ -13,7 +16,8 @@ class AccountList extends React.Component {
                 <ListItem button key={i}>
                   <ListItemIcon>
                   </ListItemIcon>
-                  <ListItemText primary={accounts[i]['account_name']} secondary={accounts[i]['balance']} />
+                  <ListItemText primary={accounts[i]['account_name']}
+                                secondary={<CurrencyFormat value={accounts[i]['balance']} displayType={'text'} thousandSeparator={true} prefix={'$'} />}/>
                 </ListItem>
             );
         }

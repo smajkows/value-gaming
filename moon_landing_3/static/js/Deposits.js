@@ -25,7 +25,7 @@ class Deposits extends React.Component {
     return (
         <React.Fragment>
           <Title>Recent Trades</Title>
-          <Table size="small">
+          <Table size="medium" stickyHeader aria-label="simple table">
             <TableHead>
               <TableRow>
                 <TableCell>Ticker</TableCell>

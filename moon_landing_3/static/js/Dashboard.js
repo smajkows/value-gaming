@@ -1,11 +1,13 @@
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
+import TableContainer from "@material-ui/core/TableContainer";
 import Chart from "./Chart";
 import Deposits from "./Deposits";
 import Orders from "./Orders";
 import React from "react";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
+import Title from "./Title";
 
 
 
@@ -68,15 +70,16 @@ class Dashboard extends React.Component {
             </Grid>
             {/* Recent Transactions */}
             <Grid item xs={12} md={12} lg={6}>
-              <Paper style={{ padding: "10px", display: 'flex', overflow: 'auto', flexDirection: 'column', height: "240px" }}>
+              <Paper style={{ display: 'flex', overflow: 'auto', flexDirection: 'column', height: "240px" }}>
                 <Deposits transactions={transactions}/>
               </Paper>
             </Grid>
             {/* Portfolio table */}
             <Grid item xs={12}>
-              <Paper style={{ padding: "10px", display: 'flex', overflow: 'auto', flexDirection: 'column' }}>
+              <Title>Portfolio Holdings</Title>
+              <TableContainer component={Paper}>
                 <Orders my_hold={holdings}/>
-              </Paper>
+              </TableContainer>
             </Grid>
           </Grid>
       </React.Fragment>
