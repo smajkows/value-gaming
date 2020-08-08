@@ -23,6 +23,7 @@ class NdbAccount(Account, ndb.PolyModel):
     platform = ndb.StringProperty(required=True)  # the platform this account was pulled from: plaid, td_ameritrade etc.
     platform_name = ndb.StringProperty()  # the name of the institution: etrade, robinhood etc.
     current_balance = ndb.FloatProperty()  # the most recent balance of this account
+    followers = ndb.KeyProperty(repeated=True)  # the keys of NdbUsers who follow this account
 
     def update_account_balance(self):
         most_recent_stats = NdbDailyAccountStats.query(NdbDailyAccountStats.account == self.key).order("-date").get()

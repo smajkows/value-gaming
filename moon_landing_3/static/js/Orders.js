@@ -30,8 +30,7 @@ class Orders extends React.Component {
                 <TableCell>Ticker</TableCell>
                 <TableCell>Avg. Price</TableCell>
                 <TableCell># Shares</TableCell>
-                <TableCell>Market Value</TableCell>
-                <TableCell align="right">Today's Gain/Loss (%) </TableCell>
+                <TableCell align={"right"}>Market Value</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -52,14 +51,13 @@ class Orders extends React.Component {
                             thousandSeparator={true}
                             decimalScale={2}/>
                     </TableCell>
-                    <TableCell>
+                    <TableCell align={"right"}>
                       <CurrencyFormat value={row.marketValue}
                             displayType={'text'}
                             thousandSeparator={true}
                             decimalScale={2}
                             prefix={'$'} />
                     </TableCell>
-                    <TableCell align="right">{row.currentDayProfitLossPercentage}</TableCell>
                   </TableRow>
               ))}
             </TableBody>

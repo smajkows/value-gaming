@@ -30,7 +30,7 @@ const AccountConnect = props => {
   return (
       <PlaidLink
         className="CustomButton"
-        style={{ padding: '20px', fontSize: '16px', cursor: 'pointer' }}
+        style={{ padding: '20px', fontSize: '16px', cursor: 'pointer', background: '#3f51b5', color: 'white' }}
         token={props.token}
         onExit={onExit}
         onSuccess={onSuccess}

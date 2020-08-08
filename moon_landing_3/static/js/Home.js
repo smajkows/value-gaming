@@ -37,6 +37,7 @@ export default function Home() {
     const classes = useStyles();
     const [token, setToken] = useState('');
     const [accounts, setAccounts] = useState([]);
+    const [followedaccounts, setFollowedaccounts] = useState([]);
     const[username, setUsername] = useState('');
     const [newusername, setNewusername] = useState(username);
 
@@ -50,6 +51,7 @@ export default function Home() {
         .then(data =>{
             setAccounts(data['accounts']);
             setUsername(data['username']);
+            setFollowedaccounts(data['followedaccounts']);
         });
     }, []);
 
@@ -93,17 +95,23 @@ export default function Home() {
                 </div>
               </Paper>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12} md={12} lg={6}>
+                <Paper className={classes.paper}>
                 <AccountConnect token={token}/>
-                <div className={classes.root} style={{margin: "20px"}}>
                   <List component="nav" aria-label="main mailbox folders">
-                      <ListSubheader className={classes.root}>Connected Accounts</ListSubheader>
+                      <ListSubheader className={classes.root}>Your Accounts</ListSubheader>
                       <AccountList accounts={accounts}/>
                   </List>
-                </div>
+                </Paper>
             </Grid>
-            <Grid item xs={6}>
-              <Paper className={classes.paper}>News Feed for Followed accounts coming soon!</Paper>
+            <Grid item xs={12} md={12} lg={6}>
+              <Paper className={classes.paper}>
+                <h3>See your followed accounts below – News feed coming soon!</h3>
+                <List component="nav" aria-label="main mailbox folders">
+                      <ListSubheader className={classes.root}>Followed Accounts</ListSubheader>
+                      <AccountList accounts={followedaccounts}/>
+                  </List>
+              </Paper>
             </Grid>
           </Grid>
         </React.Fragment>

@@ -18,12 +18,13 @@ from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
 from moon_landing_3.views import landing, login, AuthHandler, AuthCallbackHandler, datastore_test_page, HomePageHandler,\
-    DailyAccountPoll, LeaderboardPageHandler, LeaderboardPageHandler2, AccountPageHandler, ReactApp, ReactAppHome, AccountDataHandler,\
-    HomePageJson, PlaidToken, PlaidAccountCreation, PlaidTransactionWebhook, ChangeUsername
+    DailyAccountPoll, LeaderboardPageHandler, LeaderboardPageHandler2, AccountPageHandler, AccountDataHandler,\
+    HomePageJson, PlaidToken, PlaidAccountCreation, PlaidTransactionWebhook, ChangeUsername, FollowAccountHandler
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', login),
+    path('follow/account', FollowAccountHandler.as_view()),
     path('change/username', ChangeUsername.as_view()),
     path('item/plaid/webhook', csrf_exempt(PlaidTransactionWebhook.as_view())),
     path('account_creation', PlaidAccountCreation.as_view()),

@@ -37,6 +37,7 @@ class PlaidAccountHandler(AbstractAccountHandler):
                           platform_name=account['platform'],
                           type=account['type'],
                           mask=account['mask'],
+                          account_screen_name=None,
                           subtype=account['subtype'],
                           platform_id=account['institution_id'],
                           plaid_item_entity=ndb.Key(PlaidItem, account['item_id']))

@@ -4,12 +4,13 @@ import TableContainer from "@material-ui/core/TableContainer";
 import Chart from "./Chart";
 import Deposits from "./Deposits";
 import Orders from "./Orders";
+import Button from "@material-ui/core/Button";
 import React from "react";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Title from "./Title";
-
-
+import axios from "axios";
+import Cookies from "js-cookie";
 
 function Copyright() {
   return (
@@ -33,9 +34,59 @@ class Dashboard extends React.Component {
         holdings: [],
         transactions: [],
         daily_data_chart: [],
+        follow_status: false,
+        account_id: '',
+        account_name: '',
         daily_gain: 1,
         isLoading: true,
       }
+        this.follow = this.follow.bind(this);
+        this.unfollow = this.unfollow.bind(this);
+  }
+
+  follow(e) {
+      e.stopPropagation();
+      const csrftoken = Cookies.get('csrftoken');
+      const token = Cookies.get('token');
+        axios.post('/follow/account',
+          {
+            target_account_id: this.state.account_id,
+            follow_action: 'follow',
+            firebase_token: token
+            },
+           {
+               headers: {
+                'X-CSRFToken': csrftoken
+               }
+          }).then(response =>
+              this.setState({
+                follow_status: response['data']['follow_status'],
+                follower_count: response['data']['follower_count']
+            })
+          );
+    }
+
+
+  unfollow(e){
+      e.stopPropagation();
+      const csrftoken = Cookies.get('csrftoken');
+      const token = Cookies.get('token');
+        axios.post('/follow/account',
+          {
+            target_account_id: this.state.account_id,
+            follow_action: 'unfollow',
+            firebase_token: token
+            },
+           {
+               headers: {
+                'X-CSRFToken': csrftoken
+               }
+          }).then(response =>
+              this.setState({
+                follow_status: response['data']['follow_status'],
+                follower_count: response['data']['follower_count']
+            })
+          );
   }
 
     componentDidMount() {
@@ -46,10 +97,14 @@ class Dashboard extends React.Component {
         // ...then we update the users state
         .then(data =>
           this.setState({
-            holdings: data['positions'],
+            holdings: data['positions'].reverse(),
+            follower_count: data['followers'],
             transactions: data['transactions'],
+            account_id: data['account_id'],
             daily_data_chart: data['daily_data_chart'],
             daily_gain: data['week_gain'],
+            account_name: data['account_name'],
+            follow_status: data['follow_status'],
             isLoading: false,
           })
         )
@@ -57,11 +112,34 @@ class Dashboard extends React.Component {
         .catch(error => this.setState({ error, isLoading: false }));
     }
 
+
+
   render() {
-    const { holdings, transactions, isLoading, daily_data_chart, daily_gain } = this.state;
+    const { holdings, transactions, isLoading, follower_count,
+        follow_status, daily_data_chart, daily_gain, account_name } = this.state;
+    console.log(follow_status);
     return (
     <React.Fragment>
           <Grid container spacing={3}>
+
+            <Grid item xs={12}>
+                <Paper style={{ padding: "10px"}}>
+                    <Grid container spacing={3} alignContent={"center"} alignItems={"center"}>
+                        <Grid item xs={4} md={4} lg={4} >
+                            <h2>Account Name:</h2>
+                            <h3>{account_name}</h3>
+                        </Grid>
+                        <Grid item xs={4} md={4} lg={4}>
+                            <h2>Followers:</h2>
+                            <h3>{follower_count}</h3>
+                        </Grid>
+                        <Grid item xs={4} md={4} lg={4}>
+                        { follow_status ? <Button onClick={this.unfollow} variant={"contained"} color={"secondary"}>Unfollow</Button>
+                            : <Button onClick={this.follow} variant={"contained"} color={"primary"}>Follow</Button>}
+                        </Grid>
+                    </Grid>
+                </Paper>
+            </Grid>
             {/* Chart */}
             <Grid item xs={12} md={12} lg={6}>
               <Paper style={{ padding: "10px", display: 'flex', overflow: 'auto', flexDirection: 'column', height: "240px" }}>
