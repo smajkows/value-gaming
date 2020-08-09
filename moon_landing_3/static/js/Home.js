@@ -39,6 +39,7 @@ export default function Home() {
     const [accounts, setAccounts] = useState([]);
     const [followedaccounts, setFollowedaccounts] = useState([]);
     const[username, setUsername] = useState('');
+    const[uniquefollowers, setUniquefollowers] = useState(0);
     const [newusername, setNewusername] = useState(username);
 
     useEffect(() => {
@@ -52,6 +53,7 @@ export default function Home() {
             setAccounts(data['accounts']);
             setUsername(data['username']);
             setFollowedaccounts(data['followedaccounts']);
+            setUniquefollowers(data['unique_followers']);
         });
     }, []);
 
@@ -76,23 +78,30 @@ export default function Home() {
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Paper className={classes.paper}>
-                <div>
-                  <form onSubmit={handleSubmit}>
-                    <TextField id="outlined-basic" label="Update Screename" variant="outlined"
-                    value={newusername} onChange={e => setNewusername(e.target.value)}>
-                      Update Your Username:
-                    </TextField>
-                    <Button
-                        type="submit"
-                        className={classes.button}
-                    >
-                        Update
-                    </Button>
-                  </form>
-                <p>
-                    {username}
-                </p>
-                </div>
+                  <Grid container spacing={3} alignContent={"center"} alignItems={"center"}>
+                      <Grid item xs={6} md={6} lg={6} >
+                            <form onSubmit={handleSubmit}>
+                            <TextField id="outlined-basic" label="Update Screename" variant="outlined"
+                            value={newusername} onChange={e => setNewusername(e.target.value)}>
+                              Update Your Username:
+                            </TextField>
+                            <Button
+                                type="submit"
+                                className={classes.button}
+                                variant={"outlined"}
+                            >
+                                Update
+                            </Button>
+                          </form>
+                            <h3>
+                                {username}
+                            </h3>
+                      </Grid>
+                      <Grid item xs={6} md={6} lg={6} >
+                          <h2>Followers:</h2>
+                          <h3>{uniquefollowers}</h3>
+                      </Grid>
+                  </Grid>
               </Paper>
             </Grid>
             <Grid item xs={12} md={12} lg={6}>

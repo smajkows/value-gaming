@@ -10,7 +10,8 @@ import Grid from "@material-ui/core/Grid";
 import CurrencyFormat from 'react-currency-format';
 import Paper from '@material-ui/core/Paper';
 import TableContainer from "@material-ui/core/TableContainer";
-import clsx from "clsx";
+import Tooltip from "@material-ui/core/Tooltip";
+import InfoIcon from '@material-ui/icons/Info';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -133,16 +134,33 @@ class Leaderboard extends React.Component {
               <Table size="medium" stickyHeader aria-label="simple table">
                 <TableHead>
                   <TableRow>
+                    <TableCell>Rank</TableCell>
                     <TableCell>Platform</TableCell>
                     <TableCell>Name</TableCell>
+                    <TableCell>Followers</TableCell>
+                    <TableCell>
+                        Ytd %
+                        <Tooltip title="Calculated from when the account was connected">
+                          <InfoIcon fontSize={"small"}/>
+                        </Tooltip>
+                    </TableCell>
                     <TableCell align="right">Account Value</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {accounts.map((account) => (
+                  {accounts.map((account, index) => (
                     <TableRow onClick={e => window.location.href = account.link} key={account.account_id}>
+                      <TableCell>{index+1}</TableCell>
                       <TableCell>{account.platform_name}</TableCell>
                       <TableCell >{account.display_name}</TableCell>
+                      <TableCell>{account.follower_count}</TableCell>
+                      <TableCell>
+                        <CurrencyFormat
+                          displayType={'text'}
+                          value={account.ytd * 100}
+                          decimalScale={2}
+                        />
+                      </TableCell>
                       <TableCell align="right">
                         <CurrencyFormat value={account.value}
                                         displayType={'text'}

@@ -3,7 +3,7 @@ from django.template import loader
 from etrade_python_client.etrade_python_client import OauthTextInputHandler
 from td_ameritrade_python_client.client import TDAmeritradeAuth
 from moon_landing_3.accounts.utility import AccountHandlerFactory
-from moon_landing_3.accounts.accounts import NdbAccount
+from moon_landing_3.accounts.accounts import NdbAccount, NdbDailyAccountStats
 from moon_landing_3.profiles.utility import ProfileHandlerFactory
 from moon_landing_3.accounts.plaid.accounts import PlaidAccount, PlaidItem
 from moon_landing_3.user import NdbUser
@@ -109,10 +109,12 @@ class HomePageJson(View):
             accounts = NdbAccount.query(NdbAccount.user_id == claims['user_id']).fetch()
             account_keys = []
             followed_accounts = []
+            followers = []
             for account in accounts:
                 account_keys.append(account.key)
                 accounts_list.append({'platform': account.platform, 'account_name': account.account_name,
                                       'balance': account.current_balance})
+                followers.extend(account.followers)
 
             for account in moon_landing_user.followed_accounts:
                 full_account = account.get()
@@ -123,7 +125,7 @@ class HomePageJson(View):
                                             linked_accounts=[account for account in account_keys])
                 moon_landing_user.put()
         context = {'accounts': accounts_list, 'username': moon_landing_user.screen_name,
-                   'followedaccounts': followed_accounts}
+                   'followedaccounts': followed_accounts, 'unique_followers': len(list(set(followers)))}
         return HttpResponse(json.dumps(context))
 
 
@@ -240,10 +242,16 @@ class LeaderboardPageHandler2(View):
         # TODO: return 403 message to non-users , id_token = request.COOKIES.get('token')
         profiles_json = []
         id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
+        year_ago = datetime.today() - timedelta(days=365)
         if id_token:
             query = NdbAccount.query().order(-NdbAccount.current_balance)  # adjust based on gain/loss
             accounts = query.fetch()
             for account in accounts:
+                query = NdbDailyAccountStats.query(NdbDailyAccountStats.account == account.key,
+                                                   NdbDailyAccountStats.date > year_ago)\
+                    .order(NdbDailyAccountStats.date)
+                account_values = query.fetch()
+                ytd = (account_values[0].balance - account_values[-1].balance) / account_values[-1].balance
                 screen_name = account.account_screen_name
                 if account.platform == 'plaid':
                     moon_landing_user = ndb.Key(NdbUser, account.user_id).get()
@@ -256,7 +264,8 @@ class LeaderboardPageHandler2(View):
                 profiles_json.append({'platform': account.platform, 'account_id': account.account_id,
                                       'display_name': display_name, 'value': account.current_balance,
                                       'link': '/account/page/' + account.platform + '_' + account.account_id,
-                                      'platform_name': account.platform_name})
+                                      'platform_name': account.platform_name, 'follower_count': len(account.followers),
+                                      'ytd': ytd})
             return HttpResponse(json.dumps(profiles_json))
 
         raise PermissionDenied

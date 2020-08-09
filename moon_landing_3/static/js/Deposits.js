@@ -22,7 +22,6 @@ class Deposits extends React.Component {
 
   render() {
     var transactions = this.props.transactions;
-    console.log(transactions);
     return (
         <React.Fragment>
           <Title>Recent Trades</Title>
