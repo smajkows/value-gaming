@@ -251,7 +251,7 @@ class LeaderboardPageHandler2(View):
                                                    NdbDailyAccountStats.date > year_ago)\
                     .order(NdbDailyAccountStats.date)
                 account_values = query.fetch()
-                ytd = (account_values[0].balance - account_values[-1].balance) / account_values[-1].balance
+                ytd = (account_values[-1].balance - account_values[0].balance) / account_values[0].balance
                 screen_name = account.account_screen_name
                 if account.platform == 'plaid':
                     moon_landing_user = ndb.Key(NdbUser, account.user_id).get()
