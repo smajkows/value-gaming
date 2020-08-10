@@ -5,7 +5,6 @@ import Cookies from 'js-cookie'
 
 function createAccount(token, metadata) {
     const csrftoken = Cookies.get('csrftoken');
-    console.log(token, metadata);
     axios.post('/account_creation',
       {
         token: token,

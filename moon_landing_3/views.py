@@ -101,8 +101,7 @@ class HomePageJson(View):
 
     def get(self, request):
         accounts_list = []
-        id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
-        # TODO: refactor user check into a decorator
+        id_token = request.COOKIES.get('token')
         if id_token:
             claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
             moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
@@ -118,12 +117,15 @@ class HomePageJson(View):
 
             for account in moon_landing_user.followed_accounts:
                 full_account = account.get()
-                followed_accounts.append({'account_name': full_account.account_screen_name,
-                                          'balance': full_account.current_balance})
+                if full_account:
+                    followed_accounts.append({'account_name': full_account.account_screen_name,
+                                              'balance': full_account.current_balance})
+                else:
+                    moon_landing_user.followed_accounts.remove(account)
             if not moon_landing_user:
                 moon_landing_user = NdbUser(id=claims['user_id'], firebase_id=claims['user_id'],
                                             linked_accounts=[account for account in account_keys])
-                moon_landing_user.put()
+            moon_landing_user.put()
         context = {'accounts': accounts_list, 'username': moon_landing_user.screen_name,
                    'followedaccounts': followed_accounts, 'unique_followers': len(list(set(followers)))}
         return HttpResponse(json.dumps(context))
@@ -285,12 +287,7 @@ def login(request):
 
 def datastore_test_page(request):
     template = loader.get_template('datastore-test.html')
-    items = client.query(kind='NdbUser').fetch()
-    items_list = []
-    for plaid in items:
-        print('item')
-        items_list.append(plaid)
-    context = {'items': items_list}
+    context = {'items': []}
     return HttpResponse(template.render(context, request))
 
 

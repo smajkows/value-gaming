@@ -48,6 +48,7 @@
     "react-intl": "^5.4.6",
     "react-plaid-link": "^2.2.3",
     "react-router-dom": "^5.2.0",
+    "react-virtualized": "^9.22.1",
     "recharts": "^1.8.5"
   }
 }
