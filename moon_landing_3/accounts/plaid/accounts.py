@@ -20,6 +20,7 @@ class PlaidAccount(NdbAccount):
     subtype = ndb.StringProperty()
     platform_id = ndb.StringProperty()  # the id of the platform from plaid
     plaid_item_entity = ndb.KeyProperty(required=True)  # the key for the plaid item which holds the access token
+    plaid_valid = ndb.BooleanProperty(default=True)
 
 
 class PlaidAccountHandler(AbstractAccountHandler):
@@ -62,8 +63,14 @@ class PlaidAccountHandler(AbstractAccountHandler):
         profile = account.plaid_item_entity.get()
         access_token = profile.access_token
         today_str = datetime.date.today().strftime("%Y-%m-%d")
-        balance_info = plaid_client.Holdings.get(access_token)
-        update_webhook = plaid_client.Item.webhook.update(access_token, 'http://project-moon-landing.appspot.com/item/plaid/webhook')
+        try:
+            balance_info = plaid_client.Holdings.get(access_token)
+            plaid_client.Item.webhook.update(access_token, 'http://project-moon-landing.appspot.com/item/plaid/webhook')
+        except Exception as e:
+            print("issue polling plaid account {}".format(account))
+            account.plaid_valid = False
+            account.put()
+            return
         self.create_daily_stats_from_api(balance_info)
         query = client.query(kind='NdbTransaction', order=('-transaction_date',))
         latest_transactions = query.fetch(1)
@@ -85,6 +92,8 @@ class PlaidAccountHandler(AbstractAccountHandler):
                 security['security_id']: security
             })
         self.create_transactions_from_api(transaction_info, securities)
+        account.plaid_valid = True
+        account.put()
         return
 
     def create_transactions_from_api(self, transaction_info, securities):

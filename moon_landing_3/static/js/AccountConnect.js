@@ -20,8 +20,8 @@ function createAccount(token, metadata) {
 
 const AccountConnect = props => {
 
-  const onExit = (error, metadata) => console.log('onExit', error, metadata);
-  const onEvent = (eventName, metadata) => console.log('onEvent', eventName, metadata);
+  const onExit = () => console.log('onExit');
+  const onEvent = () => console.log('onEvent');
   const onSuccess = (token, metadata) => createAccount(token, metadata);
 
 

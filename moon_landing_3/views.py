@@ -25,9 +25,13 @@ class PlaidAccountCreation(View):
     def post(self, request):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        response = plaid_client.Item.public_token.exchange(body['token']) # use plaid client to get perm access token
-        access_token = response['access_token']  #this access token shouldn't expire
-        item_id = response['item_id']  # the item_id for the access token
+        if not body.get('is_update', None):
+            response = plaid_client.Item.public_token.exchange(body['token']) # use plaid client to get perm access token
+            access_token = response['access_token']  #this access token shouldn't expire
+            item_id = response['item_id']  # the item_id for the access token
+        else:
+            item_id = body.get('item_id')
+            access_token = ndb.Key(PlaidItem, item_id).get().access_token
         account_handler = AccountHandlerFactory.get_handler('plaid')
         # TODO: refactor user check into a decorator
         id_token = request.COOKIES.get('token')  # None #  request.get("token")
@@ -41,12 +45,11 @@ class PlaidAccountCreation(View):
 class PlaidToken(View):
     def get(self, request):
         id_token = request.COOKIES.get('token')
+        item_id = request.GET.get('item_id', None)
         if id_token:
             claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
-            response = plaid_client.LinkToken.create(
-                {
+            input_dict = {
                     'user': {
-                        # This should correspond to a unique id for the current user.
                         'client_user_id': claims['user_id'],
                     },
                     'client_name': "Moon Landing",
@@ -54,7 +57,11 @@ class PlaidToken(View):
                     'country_codes': ['US'],
                     'language': "en",
                 }
-            )
+            if item_id and item_id != 'undefined':
+                input_dict['access_token'] = ndb.Key(PlaidItem, item_id).get().access_token
+                input_dict.pop('products')
+
+            response = plaid_client.LinkToken.create(input_dict)
             return HttpResponse(json.dumps(response['link_token']))
         raise PermissionDenied
 
@@ -109,10 +116,15 @@ class HomePageJson(View):
             account_keys = []
             followed_accounts = []
             followers = []
+            need_put = False
             for account in accounts:
+                item_id = ''
+                if not account.plaid_valid:
+                    item_id = account.plaid_item_entity.id()
                 account_keys.append(account.key)
                 accounts_list.append({'platform': account.platform, 'account_name': account.account_name,
-                                      'balance': account.current_balance})
+                                      'balance': account.current_balance, 'plaid_valid': account.plaid_valid,
+                                      'item_id': item_id})
                 followers.extend(account.followers)
 
             for account in moon_landing_user.followed_accounts:
@@ -122,10 +134,15 @@ class HomePageJson(View):
                                               'balance': full_account.current_balance})
                 else:
                     moon_landing_user.followed_accounts.remove(account)
+                    account.followers.remove(moon_landing_user.key)
+                    account.put()
+                    need_put = True
             if not moon_landing_user:
                 moon_landing_user = NdbUser(id=claims['user_id'], firebase_id=claims['user_id'],
                                             linked_accounts=[account for account in account_keys])
-            moon_landing_user.put()
+            if need_put:
+                moon_landing_user.put()
+
         context = {'accounts': accounts_list, 'username': moon_landing_user.screen_name,
                    'followedaccounts': followed_accounts, 'unique_followers': len(list(set(followers)))}
         return HttpResponse(json.dumps(context))
@@ -193,7 +210,6 @@ class PlaidTransactionWebhook(View):
 
         """
         item_id = request.POST.get('item_id')
-        print(item_id)
         if not item_id:
             # Need item id to continue
             return HttpResponse(400)
@@ -207,7 +223,6 @@ class PlaidTransactionWebhook(View):
         # Get all ndb accounts that are linked to this plaid item_id
         accounts = PlaidAccount.query(PlaidAccount.plaid_item_entity == ndb.Key(PlaidItem, item_id)).fetch()
         for account in accounts:
-            print('Plaid webhook update happening for {}'.format(item_id))
             handler = AccountHandlerFactory.get_handler(account.platform)
             if handler:
                 handler.poll_daily_account_stats(account)

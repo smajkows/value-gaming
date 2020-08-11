@@ -43,6 +43,7 @@ export default function Home() {
 
     useEffect(() => {
         axios.get('/plaid/token').then(response => setToken(response['data']));
+
     }, []);
 
     useEffect(() => {
@@ -108,7 +109,7 @@ export default function Home() {
                 <AccountConnect token={token}/>
                   <List component="nav" aria-label="main mailbox folders">
                       <ListSubheader className={classes.root}>Your Accounts</ListSubheader>
-                      <AccountList accounts={accounts}/>
+                      <AccountList owned_accounts={true} accounts={accounts}/>
                   </List>
                 </Paper>
             </Grid>
