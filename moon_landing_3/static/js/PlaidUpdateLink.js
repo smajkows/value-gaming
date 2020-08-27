@@ -3,13 +3,14 @@ import { PlaidLink } from 'react-plaid-link';
 import axios from 'axios';
 import Cookies from 'js-cookie'
 
-function createAccount(token, metadata) {
+function createAccount(token,item_id, metadata) {
     const csrftoken = Cookies.get('csrftoken');
     axios.post('/account_creation',
       {
         token: token,
         metadata: metadata,
-        is_update: true
+        is_update: true,
+        item_id: item_id
         },
        {
            headers: {
@@ -23,7 +24,7 @@ const PlaidUpdateLink = props => {
 
   const onExit = () => console.log('onExit');
   const onEvent = () => console.log('onEvent');
-  const onSuccess = (token, metadata) => createAccount(token, metadata);
+  const onSuccess = (token, metadata) => createAccount(token, props.item_id, metadata);
   const [token, setToken] = useState('');
 
     useEffect(() => {

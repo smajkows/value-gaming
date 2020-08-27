@@ -63,11 +63,11 @@ class PlaidAccountHandler(AbstractAccountHandler):
         profile = account.plaid_item_entity.get()
         access_token = profile.access_token
         today_str = datetime.date.today().strftime("%Y-%m-%d")
+        webhook_update = plaid_client.Item.webhook.update(access_token, 'http://project-moon-landing.appspot.com/item/plaid/webhook')
         try:
             balance_info = plaid_client.Holdings.get(access_token)
-            plaid_client.Item.webhook.update(access_token, 'http://project-moon-landing.appspot.com/item/plaid/webhook')
         except Exception as e:
-            print("issue polling plaid account {}".format(account))
+            print("issue polling plaid account {} {}".format(account, e))
             account.plaid_valid = False
             account.put()
             return
