@@ -483,10 +483,26 @@ class AccountDataHandler(View):
         account = ndb.Key(NdbAccount, account_id).get()
 
         follow_status = True if account.key in moon_landing_user.followed_accounts else False
-        week_gain = (one_week_balances[-1] - one_week_balances[0])/one_week_balances[0] if one_week_balances[0] else 0
-        month_gain = (one_month_balances[-1] - one_month_balances[0])/one_month_balances[0] if one_month_balances[0] else 0
-        year_gain = (one_year_balances[-1] - one_year_balances[0])/one_year_balances[0]
-        alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[0])/daily_stats_balances[0]
+        
+        try:
+            week_gain = (one_week_balances[-1] - one_week_balances[0])/one_week_balances[0] if one_week_balances[0] else 0
+        except:
+            week_gain = 0
+
+        try:
+            month_gain = (one_month_balances[-1] - one_month_balances[0])/one_month_balances[0] if one_month_balances[0] else 0
+        except:
+            month_gain = 0
+
+        try:
+            year_gain = (one_year_balances[-1] - one_year_balances[0])/one_year_balances[0]
+        except:
+            year_gain = 0
+
+        try:
+            alltime_gain = (daily_stats_balances[-1] - daily_stats_balances[0])/daily_stats_balances[0]
+        except:
+            alltime_gain = 0
 
         context = {'labels': daily_stats_labels, 'balances': daily_stats_balances, 'positions': json_positions,
                    'account_name': account.account_screen_name, 'followers': len(account.followers),
