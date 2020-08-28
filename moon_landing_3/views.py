@@ -483,7 +483,7 @@ class AccountDataHandler(View):
         account = ndb.Key(NdbAccount, account_id).get()
 
         follow_status = True if account.key in moon_landing_user.followed_accounts else False
-        
+
         try:
             week_gain = (one_week_balances[-1] - one_week_balances[0])/one_week_balances[0] if one_week_balances[0] else 0
         except:

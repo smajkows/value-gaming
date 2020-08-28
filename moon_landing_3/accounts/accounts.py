@@ -26,7 +26,7 @@ class NdbAccount(Account, ndb.PolyModel):
     followers = ndb.KeyProperty(repeated=True)  # the keys of NdbUsers who follow this account
 
     def update_account_balance(self):
-        most_recent_stats = NdbDailyAccountStats.query(NdbDailyAccountStats.account == self.key).order("-date").get()
+        most_recent_stats = NdbDailyAccountStats.query(NdbDailyAccountStats.account == self.key).order("date").get()
         self.current_balance = most_recent_stats.balance
         self.put()
 
