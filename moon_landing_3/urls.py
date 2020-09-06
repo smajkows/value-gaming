@@ -19,7 +19,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from moon_landing_3.views import landing, login, AuthHandler, AuthCallbackHandler, datastore_test_page, HomePageHandler,\
     DailyAccountPoll, LeaderboardPageHandler, LeaderboardPageHandler2, AccountPageHandler, AccountDataHandler,\
-    HomePageJson, PlaidToken, PlaidAccountCreation, PlaidTransactionWebhook, ChangeUsername, FollowAccountHandler
+    HomePageJson, PlaidToken, PlaidAccountCreation, PlaidTransactionWebhook, ChangeUsername, FollowAccountHandler,\
+    FollowedTransactionsJson
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +33,7 @@ urlpatterns = [
     path('login/', login),
     path('home', HomePageHandler.as_view()),
     path('home_accounts/', HomePageJson.as_view()),
+    path('followed_transactions/', FollowedTransactionsJson.as_view()),
     path('login/', login),
     path('datastore-tester', datastore_test_page),
     path('auth/<str:platform>/', AuthHandler.as_view()),

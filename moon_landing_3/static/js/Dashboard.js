@@ -161,7 +161,7 @@ class Dashboard extends React.Component {
             {/* Recent Transactions */}
             <Grid item xs={12} md={12} lg={6}>
               <Paper style={{ display: 'flex', overflow: 'auto', flexDirection: 'column', height: "240px" }}>
-                <Deposits transactions={transactions}/>
+                <Deposits transactions={transactions} title={'Recent Trades'}/>
               </Paper>
             </Grid>
             {/* Portfolio table */}

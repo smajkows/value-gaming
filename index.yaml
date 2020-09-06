@@ -16,3 +16,8 @@ indexes:
   - name: account
   - name: transaction_date
     direction: desc
+
+- kind: NdbTransaction
+  properties:
+  - name: account
+  - name: settlement_date

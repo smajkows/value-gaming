@@ -11,6 +11,7 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import axios from 'axios';
 import Cookies from "js-cookie";
+import Deposits from "./Deposits";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,11 +41,22 @@ export default function Home() {
     const[username, setUsername] = useState('');
     const[uniquefollowers, setUniquefollowers] = useState(0);
     const [newusername, setNewusername] = useState(username);
+    const [followed_transactions, setFollowedTransactions] = useState([]);
 
     useEffect(() => {
         axios.get('/plaid/token').then(response => setToken(response['data']));
 
     }, []);
+
+    useEffect(() => {
+      fetch(`/followed_transactions`)
+        .then(response => response.json())
+        .then(data =>{
+            setFollowedTransactions(data['followed_transactions']);
+        });
+    }, []);
+
+
 
     useEffect(() => {
       fetch(`/home_accounts`)
@@ -120,6 +132,11 @@ export default function Home() {
                       <ListSubheader className={classes.root}>Followed Accounts</ListSubheader>
                       <AccountList accounts={followedaccounts}/>
                   </List>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={12} lg={12}>
+              <Paper style={{ display: 'flex', overflow: 'auto', flexDirection: 'column', height: "240px" }}>
+                <Deposits transactions={followed_transactions} title={'Trades from Followed Accounts'} account_name={true}/>
               </Paper>
             </Grid>
           </Grid>

@@ -3,7 +3,7 @@ from django.template import loader
 from etrade_python_client.etrade_python_client import OauthTextInputHandler
 from td_ameritrade_python_client.client import TDAmeritradeAuth
 from moon_landing_3.accounts.utility import AccountHandlerFactory
-from moon_landing_3.accounts.accounts import NdbAccount, NdbDailyAccountStats
+from moon_landing_3.accounts.accounts import NdbAccount, NdbDailyAccountStats, NdbTransaction
 from moon_landing_3.profiles.utility import ProfileHandlerFactory
 from moon_landing_3.accounts.plaid.accounts import PlaidAccount, PlaidItem
 from moon_landing_3.user import NdbUser
@@ -101,6 +101,35 @@ class FollowAccountHandler(View):
                            'follower_count': len(target_account.followers)}
             except:
                 return HttpResponse(400)
+        return HttpResponse(json.dumps(context))
+
+
+class FollowedTransactionsJson(View):
+
+    def get(self, request):
+        followed_transactions = []
+        id_token = request.COOKIES.get('token')
+        if id_token:
+            claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
+            moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
+            today_minus_delta = datetime.today() - timedelta(days=5)
+            for followed_account_key in moon_landing_user.followed_accounts:
+                # for each followed account get its latest transactions
+                transactions = NdbTransaction.query(NdbTransaction.account == followed_account_key,
+                                                    NdbTransaction.settlement_date > today_minus_delta)
+                account = followed_account_key.get()
+                display_name = account.account_screen_name if account.account_screen_name else account.account_name
+                for transaction in transactions:
+                    followed_transactions.append({'instruction': transaction.instruction,
+                                         'type': transaction.type,
+                                         'account_name': display_name,
+                                         'transaction_date': transaction.transaction_date.strftime("%m/%d/%Y"),
+                                         'symbol': transaction.symbol,
+                                         'amount': transaction.amount,
+                                         'price': transaction.price,
+                                         'cost': transaction.cost})
+            sorted_transactions = sorted(followed_transactions, key=lambda i: i['transaction_date'], reverse=True)
+        context = {'followed_transactions': sorted_transactions}
         return HttpResponse(json.dumps(context))
 
 
