@@ -22,11 +22,7 @@ class PlaidAccount(NdbAccount):
     plaid_item_entity = ndb.KeyProperty(required=True)  # the key for the plaid item which holds the access token
     plaid_valid = ndb.BooleanProperty(default=True)
 
-    def update_account_balance(self):
-        most_recent_stats = NdbDailyAccountStats.query(NdbDailyAccountStats.account == self.key).order("-date").get()
-        print('most recent balance {} for account {}'.format(most_recent_stats.balance,
-                                                             most_recent_stats.account))
-        return most_recent_stats.balance
+
 
 
 class PlaidAccountHandler(AbstractAccountHandler):
@@ -194,9 +190,5 @@ class PlaidAccountHandler(AbstractAccountHandler):
                                                      positions=positions)
                 daily_stats.put()
                 account_entity = account_key.get()
-                recent_balance = account_entity.update_account_balance()
-                print('account {} with current balance {}'.format(account_entity.key, account_entity.current_balance))
-                account_entity.current_balance = recent_balance
-                account_entity.put()
-                print('account {} with updated balance {}'.format(account_entity.key, account_entity.current_balance))
-        return
+                account_entity.update_account_balance()
+                print("Account get result: {}".format(account_key.get()))

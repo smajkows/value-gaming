@@ -17,6 +17,8 @@ import json
 from django.shortcuts import redirect
 from moon_landing_3.utilities import plaid_client
 
+import requests as rq
+
 firebase_request_adapter = requests.Request()
 client = datastore.Client()
 
@@ -102,6 +104,61 @@ class FollowAccountHandler(View):
             except:
                 return HttpResponse(400)
         return HttpResponse(json.dumps(context))
+
+
+class BraintreeToken(View):
+    def get(self, request):
+        braintree_service_base_url = 'http://127.0.0.1:4567'
+        id_token = request.COOKIES.get('token')
+        claims = google.oauth2.id_token.verify_firebase_token(
+            id_token, firebase_request_adapter)
+        user_id = claims.get('user_id', None)
+        try:
+            response = rq.get(braintree_service_base_url + '/braintree_client_token',
+                                    params={'user_id': user_id,
+                                            'email': claims.get('email', None)})
+            client_token = response.json()
+        except Exception as e:
+            print('Problem requesting Braintree client token, payment section will not load without this.'
+                            'exception: {}'.format(e))
+            client_token = ''  # set an empty client token
+        return HttpResponse(json.dumps(client_token))
+
+
+class BraintreePaymentMethod(View):
+    def post(self, request):
+        braintree_service_base_url = 'http://127.0.0.1:4567'
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        id_token = body['firebase_token']
+        payment_nonce = body['payment_nonce']
+        claims = google.oauth2.id_token.verify_firebase_token(
+        id_token, firebase_request_adapter)
+        response = rq.post(braintree_service_base_url + '/add_payment_method',
+                           data={'user_id': claims.get('user_id', None),
+                                 'email': claims.get('email', None),
+                                 'payment_nonce': payment_nonce})
+
+        return
+
+class Settings(View):
+    template = 'react.html'
+
+    def get(self, request):
+        profiles = []
+        id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
+        # TODO: refactor user check into a decorator
+        if id_token:
+            try:
+                claims = google.oauth2.id_token.verify_firebase_token(
+                    id_token, firebase_request_adapter)
+            except ValueError as exc:
+                error_message = str(exc)
+            template = loader.get_template(self.template)
+            context = {}
+            return HttpResponse(template.render(context, request))
+
+        raise PermissionDenied  # If we don't have a user return a 403 error
 
 
 class FollowedTransactionsJson(View):
@@ -448,6 +505,9 @@ class AccountDataHandler(View):
             except:
                 return HttpResponse(400)
 
+        if ndb.Key(NdbAccount, account_id)._key not in moon_landing_user.followed_accounts:
+            teaser = True
+
         query = client.query(kind='NdbDailyAccountStats', order=('date',))
         query = query.add_filter('account', '=', ndb.Key(NdbAccount, account_id)._key)
         daily_stats = query.fetch()
@@ -475,13 +535,14 @@ class AccountDataHandler(View):
         today = datetime.today()
 
         for transaction in transactions_fetch:
-            transactions.append({'instruction': transaction['instruction'],
-                                 'type': transaction['type'],
-                                 'transaction_date': transaction['transaction_date'].strftime("%m/%d/%Y"),
-                                 'symbol': transaction['symbol'],
-                                 'amount': transaction['amount'],
-                                 'price': transaction['price'],
-                                 'cost': transaction['cost']})
+            if not teaser:
+                transactions.append({'instruction': transaction['instruction'],
+                                     'type': transaction['type'],
+                                     'transaction_date': transaction['transaction_date'].strftime("%m/%d/%Y"),
+                                     'symbol': transaction['symbol'],
+                                     'amount': transaction['amount'],
+                                     'price': transaction['price'],
+                                     'cost': transaction['cost']})
         daily_data_chart = []
 
         for daily in daily_stats:
@@ -539,7 +600,8 @@ class AccountDataHandler(View):
                    'transactions': transactions, 'one_week_labels': one_week_labels, 'one_week_balances': one_week_balances,
                    'one_month_labels': one_month_labels, 'one_month_balances': one_month_balances, 'one_year_labels': one_year_labels,
                    'one_year_balances': one_year_balances, 'week_gain': "{:.2%}".format(week_gain), 'month_gain': "{:.2%}".format(month_gain),
-                   'year_gain': "{:.2%}".format(year_gain), 'alltime_gain': "{:.2%}".format(alltime_gain), 'daily_data_chart': daily_data_chart}
+                   'year_gain': "{:.2%}".format(year_gain), 'alltime_gain': "{:.2%}".format(alltime_gain), 'daily_data_chart': daily_data_chart,
+                   'teaser': teaser}
 
         return HttpResponse(json.dumps(context))
 

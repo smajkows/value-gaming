@@ -23,6 +23,7 @@ class Deposits extends React.Component {
 
   render() {
     var transactions = this.props.transactions;
+    var teaser = this.props.teaser;
     var title = this.props.title;
     var account_name = this.props.account_name;
     return (
@@ -56,6 +57,7 @@ class Deposits extends React.Component {
                     <TableCell align="right">{row.amount}</TableCell>
                   </TableRow>
               ))}
+              { teaser ? <TableRow><TableCell>Follow this account to view recent trades!</TableCell></TableRow>: <TableRow></TableRow>}
             </TableBody>
           </Table>
         </React.Fragment>

@@ -19,6 +19,7 @@ import Leaderboard from "./Leaderboard";
 import Dashboard from "./Dashboard";
 import Home from "./Home";
 import Landing from "./Landing";
+import Settings from "./Settings";
 
 
 
@@ -181,6 +182,7 @@ export default function Base() {
                 <Route path="/account/page/:account_id" component={Dashboard} />
                 <Route path="/leaderboard" component={Leaderboard} />
                 <Route path="/home" component={Home}/>
+                <Route path="/settings" component={Settings}/>
                 <Route path="/callback/:platform" component={Home}/>
                 <Route path="/" component={Landing}/>
               </div>

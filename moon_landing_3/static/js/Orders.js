@@ -21,7 +21,10 @@ const useStyles = makeStyles((theme) => ({
 class Orders extends React.Component {
 
   render() {
+
+    const teaser = this.props.teaser;
     const holdings = this.props.my_hold;
+
     return (
         <React.Fragment>
           <Table size="medium" stickyHeader aria-label="simple table">
@@ -60,6 +63,7 @@ class Orders extends React.Component {
                     </TableCell>
                   </TableRow>
               ))}
+              { teaser ? <TableRow><TableCell>Follow this account to see see its full portfolio!</TableCell></TableRow>: <TableRow></TableRow>}
             </TableBody>
           </Table>
         </React.Fragment>

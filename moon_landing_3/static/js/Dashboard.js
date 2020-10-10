@@ -109,6 +109,7 @@ class Dashboard extends React.Component {
             account_name: data['account_name'],
             follow_status: data['follow_status'],
             isLoading: false,
+            teaser: data['teaser']
           })
         )
         // Catch any errors we hit and update the app
@@ -119,7 +120,8 @@ class Dashboard extends React.Component {
 
   render() {
     const { holdings, transactions, isLoading, follower_count,
-        follow_status, daily_data_chart, daily_gain, account_name, current_balance} = this.state;
+        follow_status, daily_data_chart, daily_gain, account_name, current_balance, teaser} = this.state;
+
     return (
     <React.Fragment>
           <Grid container spacing={3}>
@@ -161,14 +163,14 @@ class Dashboard extends React.Component {
             {/* Recent Transactions */}
             <Grid item xs={12} md={12} lg={6}>
               <Paper style={{ display: 'flex', overflow: 'auto', flexDirection: 'column', height: "240px" }}>
-                <Deposits transactions={transactions} title={'Recent Trades'}/>
+                  { follow_status ? <Deposits transactions={transactions} title={'Recent Trades'}/> : <Deposits transactions={[]} teaser={true} title={'Recent Trades'}/>}
               </Paper>
             </Grid>
             {/* Portfolio table */}
             <Grid item xs={12}>
               <Title>Portfolio Holdings</Title>
               <TableContainer component={Paper}>
-                <Orders my_hold={holdings}/>
+                  { follow_status ? <Orders my_hold={holdings} /> : <Orders my_hold={[]} teaser={true}/>}
               </TableContainer>
             </Grid>
           </Grid>

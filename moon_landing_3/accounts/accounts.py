@@ -25,6 +25,13 @@ class NdbAccount(Account, ndb.PolyModel):
     current_balance = ndb.FloatProperty()  # the most recent balance of this account
     followers = ndb.KeyProperty(repeated=True)  # the keys of NdbUsers who follow this account
 
+    def update_account_balance(self):
+        most_recent_stats = NdbDailyAccountStats.query(NdbDailyAccountStats.account == self.key).order("-date").get()
+        print('most recent balance {} for account {}'.format(most_recent_stats.balance,
+                                                             most_recent_stats.account))
+        self.current_balance = most_recent_stats.balance
+        self.put()
+
 
 class NdbTransaction(ndb.PolyModel):
     account = ndb.KeyProperty(required=True, default=None)  # the account this transaction belongs to

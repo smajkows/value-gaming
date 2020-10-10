@@ -1,0 +1,3 @@
+Flask==1.1.1
+braintree==4.1.0
+Flask-Cors==3.0.8
