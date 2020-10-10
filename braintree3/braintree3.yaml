@@ -2,4 +2,4 @@ runtime: python37
 service: braintree3
 
 env_variables:
-    MOON_LANDING_DOMAIN: 'https://www.project-moon-landing.appspot.com'
+    MOON_LANDING_DOMAIN: 'https://project-moon-landing.uc.r.appspot.com'
