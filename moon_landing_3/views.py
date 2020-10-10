@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 import json
 from django.shortcuts import redirect
 from moon_landing_3.utilities import plaid_client
+from utils import get_braintree_url
 
 import requests as rq
 
@@ -108,7 +109,7 @@ class FollowAccountHandler(View):
 
 class BraintreeToken(View):
     def get(self, request):
-        braintree_service_base_url = 'http://127.0.0.1:4567'
+        braintree_service_base_url = get_braintree_url()
         id_token = request.COOKIES.get('token')
         claims = google.oauth2.id_token.verify_firebase_token(
             id_token, firebase_request_adapter)
@@ -127,7 +128,7 @@ class BraintreeToken(View):
 
 class BraintreePaymentMethod(View):
     def post(self, request):
-        braintree_service_base_url = 'http://127.0.0.1:4567'
+        braintree_service_base_url = get_braintree_url()
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
         id_token = body['firebase_token']

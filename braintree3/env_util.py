@@ -14,7 +14,7 @@ def get_logging_credentials():
 
 
 def get_stats_domain():
-    domain = os.getenv("STATS_DOMAIN", None)
+    domain = os.getenv("MOON_LANDING_DOMAIN", None)
     if not domain:
         domain = 'http://localhost:8000'
     return domain
