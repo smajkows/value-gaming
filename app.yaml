@@ -3,7 +3,7 @@ runtime: python37
 
 env_variables:
   BUCKET_NAME: "example-gcs-bucket"
-  BRAINTREE_MODULE_URL: "https://www.braintree3-dot-project-moon-landing.appspot.com"
+  BRAINTREE_MODULE_URL: "https://braintree3-dot-project-moon-landing.uc.r.appspot.com"
 
 handlers:
 # This configures Google App Engine to serve the files in the app's static

@@ -83,17 +83,17 @@ export default function Settings() {
     return (
         <React.Fragment>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={12} lg={6}>
               <Paper className={classes.paper}>
                   <Grid container spacing={3} alignContent={"center"} alignItems={"center"}>
-                      <Grid item xs={6} md={6} lg={6} >
+                      <Grid item xs={12}>
                         <div id="dropin-container"></div>
                         <Button class="payment-button" type="submit" id="submit-button">Add Payment Method</Button>
                       </Grid>
                   </Grid>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={12} lg={12}>
+            <Grid item xs={12} md={12} lg={6}>
                 <Paper className={classes.paper}>
                   <List component="nav" aria-label="main mailbox folders">
                       <ListSubheader className={classes.root}>Your Subscriptions</ListSubheader>
