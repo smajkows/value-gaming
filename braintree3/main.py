@@ -68,7 +68,7 @@ def get_braintree_plans():
 def update_user_plan():
     customer = customer_find(request.form['user_id'])
     plan_id = request.form['plan_id']
-    sub_id = request.form['subscription_id']
+    sub_id = request.form.get('subscription_id', None)
 
     if not customer:
         print('non-existing customer trying to update plan user_id:{}'.format(request.form['user_id']))
