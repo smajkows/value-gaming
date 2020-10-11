@@ -20,7 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from moon_landing_3.views import landing, login, AuthHandler, AuthCallbackHandler, datastore_test_page, HomePageHandler,\
     DailyAccountPoll, LeaderboardPageHandler, LeaderboardPageHandler2, AccountPageHandler, AccountDataHandler,\
     HomePageJson, PlaidToken, PlaidAccountCreation, PlaidTransactionWebhook, ChangeUsername, FollowAccountHandler,\
-    FollowedTransactionsJson, Settings, BraintreeToken, BraintreePaymentMethod
+    FollowedTransactionsJson, Settings, BraintreeToken, BraintreePaymentMethod, BraintreePlanHanlder, SettingsJson, HandlePlanUpgrade
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,7 +31,10 @@ urlpatterns = [
     path('account_creation', PlaidAccountCreation.as_view()),
     path('plaid/token', PlaidToken.as_view()),
     path('login/', login),
+    path('settings_json', SettingsJson.as_view()),
+    path('get_plans', BraintreePlanHanlder.as_view()),
     path('home', HomePageHandler.as_view()),
+    path('update_user_plan', HandlePlanUpgrade.as_view()),
     path('braintree/token', BraintreeToken.as_view()),
     path('add_payment_method', BraintreePaymentMethod.as_view()),
     path('home_accounts/', HomePageJson.as_view()),

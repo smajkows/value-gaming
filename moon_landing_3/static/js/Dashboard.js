@@ -5,13 +5,17 @@ import Chart from "./Chart";
 import Deposits from "./Deposits";
 import Orders from "./Orders";
 import Button from "@material-ui/core/Button";
-import React from "react";
+import React, {useState} from "react";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Title from "./Title";
 import axios from "axios";
 import Cookies from "js-cookie";
 import CurrencyFormat from "react-currency-format";
+import Alert from '@material-ui/lab/Alert';
+import AlertTitle from "@material-ui/lab";
+
+
 
 function Copyright() {
   return (
@@ -60,11 +64,19 @@ class Dashboard extends React.Component {
                headers: {
                 'X-CSRFToken': csrftoken
                }
-          }).then(response =>
-              this.setState({
-                follow_status: response['data']['follow_status'],
-                follower_count: response['data']['follower_count']
-            })
+          }).then(response =>{
+              if (response['data']['error']){
+                  const error_message = response['data']['error'];
+                  this.setState({
+                      errors: <Alert severity="error">{error_message}</Alert>
+                  })
+              }else {
+                  this.setState({
+                    follow_status: response['data']['follow_status'],
+                    follower_count: response['data']['follower_count']
+                })
+              }
+        }
           );
     }
 
@@ -120,10 +132,13 @@ class Dashboard extends React.Component {
 
   render() {
     const { holdings, transactions, isLoading, follower_count,
-        follow_status, daily_data_chart, daily_gain, account_name, current_balance, teaser} = this.state;
+        follow_status, daily_data_chart, daily_gain, account_name, current_balance, errors, teaser} = this.state;
 
     return (
     <React.Fragment>
+            <div style={{width: '100%', marginTop: '10px'}}>
+                {errors}
+            </div>
           <Grid container spacing={3}>
 
             <Grid item xs={12}>

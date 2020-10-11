@@ -13,13 +13,15 @@ gateway = braintree.BraintreeGateway(
     )
 )
 
+def get_plans():
+    return gateway.plan.all()
+
 def generate_client_token(customer_id=None):
     options = {}
     customer = gateway.customer.find(customer_id)
     if customer:
         options = {"customer_id": customer.id}
     token = gateway.client_token.generate(options)
-    print(token)
     return token
 
 def transact(options):
@@ -27,6 +29,12 @@ def transact(options):
 
 def create_subscription(options):
     return gateway.subscription.create(options)
+
+def find_subscription(sub_id):
+    return gateway.subscription.find(sub_id)
+
+def cancel_subscription(sub_id):
+    return gateway.subscription.cancel(sub_id)
 
 def customer_create(options):
     return gateway.customer.create(options)

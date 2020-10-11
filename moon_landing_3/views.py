@@ -6,7 +6,7 @@ from moon_landing_3.accounts.utility import AccountHandlerFactory
 from moon_landing_3.accounts.accounts import NdbAccount, NdbDailyAccountStats, NdbTransaction
 from moon_landing_3.profiles.utility import ProfileHandlerFactory
 from moon_landing_3.accounts.plaid.accounts import PlaidAccount, PlaidItem
-from moon_landing_3.user import NdbUser
+from moon_landing_3.user import NdbUser, NdbBraintreePlan, NdbBraintreeSubscription
 from django.views import View
 from google.auth.transport import requests
 from google.cloud import datastore, ndb
@@ -93,8 +93,20 @@ class FollowAccountHandler(View):
                     moon_landing_user.followed_accounts.remove(target_account.key)
                     target_account.followers.remove(moon_landing_user.key)
                 if follow_action == 'follow':
-                    moon_landing_user.followed_accounts.append(target_account.key)
-                    target_account.followers.append(moon_landing_user.key)
+                    free_plan = ndb.Key(NdbBraintreePlan, 'free_plan').get()
+                    user_limit = free_plan.followers_allowed  # set the user default limit to 1
+                    users_sub = moon_landing_user.subscription.get()
+                    if users_sub:
+                        user_limit = users_sub.plan.get().followers_allowed
+                    if len(moon_landing_user.followed_accounts) < user_limit:
+                        moon_landing_user.followed_accounts.append(target_account.key)
+                        target_account.followers.append(moon_landing_user.key)
+                    else:
+                        context['error'] = 'Upgrade your plan in Settings to follow more accounts!'
+                        return HttpResponse(json.dumps(context))
+
+                    # if the user is over the limit we should prompt the frontend saying that they need to upgrade
+                    # to follow more accounts
 
                 moon_landing_user.followed_accounts = list(set(moon_landing_user.followed_accounts))
                 moon_landing_user.put()
@@ -139,20 +151,35 @@ class BraintreePaymentMethod(View):
                            data={'user_id': claims.get('user_id', None),
                                  'email': claims.get('email', None),
                                  'payment_nonce': payment_nonce})
-
         return
+
+
+class BraintreePlanHanlder(View):
+    def get(self, request):
+        braintree_service_base_url = get_braintree_url()
+        plans = rq.get(braintree_service_base_url + '/get_plans')
+        json_plans = plans.json()
+        for plan_id in json_plans:
+            plan = json_plans[plan_id]
+            print(plan)
+            moon_landing_plan = NdbBraintreePlan(id=plan['id'], name = plan['name'],
+                                                 braintree_id=plan['id'], description=plan['description'],
+                                                 price=float(plan['price']), created_at=datetime.strptime(plan['created_at'], '%d/%m/%Y'))
+            moon_landing_plan.put()
+            print(moon_landing_plan)
+        return HttpResponse()
+
 
 class Settings(View):
     template = 'react.html'
 
     def get(self, request):
-        profiles = []
         id_token = request.COOKIES.get('token')  # TODO: for some reason the token isn't getting set on the sign in check base.html javascript
         # TODO: refactor user check into a decorator
         if id_token:
             try:
-                claims = google.oauth2.id_token.verify_firebase_token(
-                    id_token, firebase_request_adapter)
+                claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
+                moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
             except ValueError as exc:
                 error_message = str(exc)
             template = loader.get_template(self.template)
@@ -160,6 +187,79 @@ class Settings(View):
             return HttpResponse(template.render(context, request))
 
         raise PermissionDenied  # If we don't have a user return a 403 error
+
+
+class SettingsJson(View):
+    def get(self, request):
+        id_token = request.COOKIES.get('token')
+        if id_token:
+            try:
+                claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
+                moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
+                sub_id = None
+                if moon_landing_user.subscription:
+                    sub_id = moon_landing_user.subscription.id()
+                available_plans = NdbBraintreePlan.query().fetch()
+                user_current_plan = moon_landing_user.braintree_plan.get()
+                current_plan_json = {'id': user_current_plan.braintree_id, 'description': user_current_plan.description, 'price':
+                                     user_current_plan.price, 'followers_allowed': user_current_plan.followers_allowed,
+                                     'name': user_current_plan.name }
+                available_plans_list = []
+                for plan in available_plans:
+                    available_plans_list.append({
+                        'id': plan.braintree_id,
+                        'description': plan.description,
+                        'price': plan.price,
+                        'followers_allowed': plan.followers_allowed,
+                        'name': plan.name
+                    })
+
+            except ValueError as exc:
+                error_message = str(exc)
+            context = {'available_plans': available_plans_list, 'current_plan': current_plan_json, 'subscription': sub_id}
+            return HttpResponse(json.dumps(context))
+
+
+class HandlePlanUpgrade(View):
+    def post(self, request):
+        braintree_service_base_url = get_braintree_url()
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        id_token = body['firebase_token']
+        plan_id = body['plan_id']
+        context = {}
+        if id_token:
+            try:
+                claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
+                moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
+                current_plan = moon_landing_user.braintree_plan.get()
+                sub_id = None
+                if moon_landing_user.subscription:
+                    sub_id = moon_landing_user.subscription.id()
+
+                result = rq.post(braintree_service_base_url + '/update_user_plan', data={'user_id': claims['user_id'],
+                                                                                         'plan_id': plan_id,
+                                                                                         'subscription_id': sub_id })
+                json_result = result.json()
+                if json_result['success']:
+                    sub = NdbBraintreeSubscription(id=json_result['subscription_id'],
+                                                   plan=ndb.Key(NdbBraintreePlan, plan_id),
+                                                   subscription_id=json_result['subscription_id'],
+                                                   user=ndb.Key(NdbUser, claims['user_id']))
+                    sub.put()
+                    moon_landing_user.braintree_plan = ndb.Key(NdbBraintreePlan, plan_id)
+                    moon_landing_user.subscription = sub.key
+                    moon_landing_user.put()
+                current_plan = moon_landing_user.braintree_plan.get()
+                current_plan_json = {'id': current_plan.braintree_id, 'description': current_plan.description, 'price':
+                                     current_plan.price, 'name': current_plan.name}
+                context['current_user_plan'] = current_plan_json
+                context['subscription'] = sub_id
+            except Exception as e:
+                print(e)
+
+        return HttpResponse(json.dumps(context))
+
 
 
 class FollowedTransactionsJson(View):
