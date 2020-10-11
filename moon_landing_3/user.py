@@ -13,14 +13,13 @@ class NdbBraintreePlan(ndb.PolyModel):
     followers_allowed = ndb.FloatProperty(default=1)
 
 
-with client.context():
-    class NdbUser(ndb.PolyModel):
-        firebase_id = ndb.StringProperty()
-        screen_name = ndb.StringProperty()
-        linked_accounts = ndb.KeyProperty(repeated=True)
-        followed_accounts = ndb.KeyProperty(repeated=True)
-        braintree_plan = ndb.KeyProperty(default=ndb.Key(NdbBraintreePlan, 'free_plan'))  # the user's current plan they are subscribed to
-        subscription = ndb.KeyProperty()
+class NdbUser(ndb.PolyModel):
+    firebase_id = ndb.StringProperty()
+    screen_name = ndb.StringProperty()
+    linked_accounts = ndb.KeyProperty(repeated=True)
+    followed_accounts = ndb.KeyProperty(repeated=True)
+    braintree_plan = ndb.KeyProperty(default=ndb.Key(NdbBraintreePlan, 'free_plan'))  # the user's current plan they are subscribed to
+    subscription = ndb.KeyProperty()
 
 
 class NdbBraintreeSubscription(ndb.PolyModel):
