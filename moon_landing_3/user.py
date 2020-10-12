@@ -10,7 +10,7 @@ class NdbBraintreePlan(ndb.PolyModel):
     description = ndb.StringProperty(required=True)
     price = ndb.FloatProperty(required=True)
     cancel_date = ndb.DateProperty()
-    followers_allowed = ndb.FloatProperty(default=1)
+    followers_allowed = ndb.IntegerProperty(default=1)
 
 
 class NdbUser(ndb.PolyModel):
@@ -21,6 +21,20 @@ class NdbUser(ndb.PolyModel):
     braintree_plan = ndb.KeyProperty(default=ndb.Key(NdbBraintreePlan, 'free_plan'))  # the user's current plan they are subscribed to
     subscription = ndb.KeyProperty()
 
+    def check_subscription_status(self):
+        if self.subscription:
+            user_current_sub = self.subscription.get()
+            if user_current_sub:
+                plan = user_current_sub.plan.get()
+                if plan:
+                    # when a subscription is put check that the user's current subscription is not getting more follows than
+                    # is allowed
+                    if len(self.followed_accounts) >= plan.followers_allowed:
+                        self.followed_accounts = self.followed_accounts[:int(plan.followers_allowed)]
+                        self.put()
+        return
+
+
 
 class NdbBraintreeSubscription(ndb.PolyModel):
     plan = ndb.KeyProperty(required=True)  # the plan that the user purchased/canceled
@@ -29,11 +43,6 @@ class NdbBraintreeSubscription(ndb.PolyModel):
 
     def _post_put_hook(self, future):
         user = self.user.get()
-        user_current_sub = user.subscription.get()
-        plan = user_current_sub.plan.get()
-        # when a subscription is put check that the user's current subscription is not getting more follows than
-        # is allowed
-        if len(user.followed_accounts) >= plan.followers_allowed:
-            user.followed_accounts = user.followed_accounts[:plan.followers_allowed]
-            user.put()
+        if user:
+            user.check_subscription_status()
         return

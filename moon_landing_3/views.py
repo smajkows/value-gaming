@@ -232,25 +232,38 @@ class HandlePlanUpgrade(View):
             try:
                 claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
                 moon_landing_user = NdbUser.query(NdbUser.firebase_id == claims['user_id']).get()
+                if not moon_landing_user.braintree_plan:
+                    moon_landing_user.braintree_plan = ndb.Key(NdbBraintreePlan, 'free_plan') # set to free plan by default
                 current_plan = moon_landing_user.braintree_plan.get()
+                print('current plan {}'.format(current_plan))
                 sub_id = None
+                print(moon_landing_user.subscription)
                 if moon_landing_user.subscription:
                     sub_id = moon_landing_user.subscription.id()
+                    print(sub_id)
 
                 result = rq.post(braintree_service_base_url + '/update_user_plan', data={'user_id': claims['user_id'],
                                                                                          'plan_id': plan_id,
                                                                                          'subscription_id': sub_id })
                 json_result = result.json()
+                print(json_result)
                 if json_result['success']:
+                    print('json success {}'.format(json_result))
                     sub = NdbBraintreeSubscription(id=json_result['subscription_id'],
                                                    plan=ndb.Key(NdbBraintreePlan, plan_id),
                                                    subscription_id=json_result['subscription_id'],
                                                    user=ndb.Key(NdbUser, claims['user_id']))
+                    print('sub {}'.format(sub))
                     sub.put()
+                    print(sub)
                     moon_landing_user.braintree_plan = ndb.Key(NdbBraintreePlan, plan_id)
                     moon_landing_user.subscription = sub.key
                     moon_landing_user.put()
+                    print('checking sub status')
+                    moon_landing_user.check_subscription_status()
+                print("braintree plan {}".format(moon_landing_user.braintree_plan))
                 current_plan = moon_landing_user.braintree_plan.get()
+                print("currrent plan after json_result {}".format(current_plan))
                 current_plan_json = {'id': current_plan.braintree_id, 'description': current_plan.description, 'price':
                                      current_plan.price, 'name': current_plan.name}
                 context['current_user_plan'] = current_plan_json
