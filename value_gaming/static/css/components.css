@@ -7,3 +7,16 @@
 .margin-top-10 {
     margin-top: 10px;
 }
+
+.block {
+    display: block;
+}
+
+.center {
+    margin: auto;
+    text-align: center;
+}
+
+.no-border {
+    border: none; !important;
+}

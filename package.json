@@ -19,6 +19,7 @@
     "react-atomize": "1.0.14",
     "react-bootstrap": "^1.5.2",
     "react-dom": "16.8.6",
+    "react-loading": "^2.0.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.0.1",
     "react-transition-group": "^4.4.1",
