@@ -4,4 +4,3 @@ google-cloud-ndb==1.2.1
 google-auth==1.20.1
 rauth
 django-webpack-loader==0.7.0
-plaid-python

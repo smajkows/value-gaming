@@ -1,15 +1,11 @@
 # [START django_app]
 runtime: python37
 
-env_variables:
-  BUCKET_NAME: "example-gcs-bucket"
-  BRAINTREE_MODULE_URL: "https://braintree3-dot-project-moon-landing.uc.r.appspot.com"
-
 handlers:
 # This configures Google App Engine to serve the files in the app's static
 # directory.
 - url: /static
-  static_dir: moon_landing_3/static/
+  static_dir: value_gaming/static/
 
 # This handler routes all requests not caught above to your main app. It is
 # required when static routes are defined, but can be omitted (along with

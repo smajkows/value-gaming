@@ -5,20 +5,25 @@ var BundleTracker = require('webpack-bundle-tracker');
 module.exports = {
   context: __dirname,
 
-  entry: './moon_landing_3/static/js/index',
+  entry: './value_gaming/static/js/index',
 
   output: {
-      path: path.resolve('./moon_landing_3/static/bundles/'),
+      path: path.resolve('./value_gaming/static/bundles/'),
       filename: "[name]-[hash].js",
   },
 
   plugins: [
-    new BundleTracker({filename: './moon_landing_3/webpack-stats.json'}),
+    new BundleTracker({filename: './value_gaming/webpack-stats.json'}),
   ],
+
   module: {
     rules: [
       {
-        test: /\.js$/,
+          test:/\.css$/,
+          use:['style-loader','css-loader']
+      },
+      {
+        test: /\.js$|jsx/,
         exclude: /node_modules/,
         use: ['babel-loader']
       }

@@ -1,4 +1,0 @@
-cron:
-- description: "daily account polling"
-  url: /daily/account_poll
-  schedule: every day 16:00
