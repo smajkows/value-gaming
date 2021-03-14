@@ -34,11 +34,19 @@ class OverUnder extends React.Component {
   render() {
     const { isLoading, bets, error } = this.state;
     if (isLoading){
-        return (<div className="sub-container">
-            <h1> LOADING </h1>
-        </div>
+        return (
+            <div className="sub-container">
+                <h1> LOADING </h1>
+            </div>
         );
-    }else {
+    }
+    else if (bets.length === 0){
+        return (
+            <div className="sub-container">
+                <Card> There are no live games, check back later. </Card>
+            </div>
+        );
+    } else {
     return (
         <div className="sub-container">
             {bets.map((bet, index) => (
