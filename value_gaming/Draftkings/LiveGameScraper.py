@@ -48,12 +48,9 @@ class LiveGameDataScraper(object):
             }
         }
         if event_data is not None:
-            if isinstance(event_data, dict):
-                # Convert dict to JSON string
-                payload = json.dumps(event_data)
-                # specify http content-type to application/json
-                task["app_engine_http_request"]["headers"] = {"Content-type": "application/json",
-                                                              "'X-CSRFToken'": ""}
+            payload = json.dumps(event_data)
+            # specify http content-type to application/json
+            task["app_engine_http_request"]["headers"] = {"Content-type": "application/json"}
             # The API expects a payload of type bytes.
             converted_payload = payload.encode()
 

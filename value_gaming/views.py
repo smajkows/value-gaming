@@ -12,18 +12,22 @@ def write_data_to_firebase_collection(request):
     """Log the request payload."""
     payload = json.loads(request.body)
     for key, item in payload.items():
-        live_data = LiveGameDataDraftkings(
-                    home_team=item.get('home_team'),
-                    away_team=item.get('away_team'),
-                    time=item.get('time'),
-                    home_team_score=item.get('home_team_score'),
-                    away_team_score=item.get('away_team_score'),
-                    period=item.get('period'),
-                    source='Draftkings',
-                    event_id=item.get('event_id'),
-                    projected_total=None
-                )
-        live_data.populate_and_save()
+        if item.get('home_team_score'):
+            # only save the live games right now since this is specfically for Livegame data and non-live game
+            # data doesnt need to be stored on every load since there are no scores being populated which is whats
+            # needed for training data
+            live_data = LiveGameDataDraftkings(
+                        home_team=item.get('home_team'),
+                        away_team=item.get('away_team'),
+                        time=item.get('time'),
+                        home_team_score=item.get('home_team_score'),
+                        away_team_score=item.get('away_team_score'),
+                        period=item.get('period'),
+                        source='Draftkings',
+                        event_id=item.get('event_id'),
+                        projected_total=None
+                    )
+            live_data.populate_and_save()
     return HttpResponse(json.dumps('Done'))
 
 
