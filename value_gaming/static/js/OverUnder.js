@@ -2,6 +2,7 @@ import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from "react-bootstrap/Button";
 
+
 class OverUnder extends React.Component {
 
   constructor() {
@@ -29,9 +30,9 @@ class OverUnder extends React.Component {
   render() {
     const { isLoading, bets, error } = this.state;
     return (
-        <React.Fragment>
+        <div className="sub-container">
             {bets.map((bet, index) => (
-                <Card key={index}>
+                <Card key={index} className="margin-top-10">
                   <Card.Header>{bet.name}</Card.Header>
                   <Card.Body>
                     <Card.Title>{bet.home_team}  vs. {bet.away_team}</Card.Title>
@@ -42,7 +43,7 @@ class OverUnder extends React.Component {
                   </Card.Body>
                 </Card>
             ))}
-        </React.Fragment>
+        </div>
     );
   }
 }

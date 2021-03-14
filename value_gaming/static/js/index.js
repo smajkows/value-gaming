@@ -9,7 +9,5 @@ export default function Main() {
   );
 }
 
-
-
 const rootElement = document.getElementById("react");
 ReactDOM.render(<Main />, rootElement);
