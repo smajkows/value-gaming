@@ -28,9 +28,9 @@ class LiveGameDataScraper(object):
                 event_data[event_id] = {'event_id': event_id, 'home_team_score': None, 'away_team_score': None,
                                         'time': None, 'period': None, 'value': None}
             team_name = event.find("span", {"class": "event-cell__name"})
-            team_string = 'home_team'
-            if 'home_team' in event_data[event_id]:
-                team_string = 'away_team'
+            team_string = 'away_team'
+            if 'away_team' in event_data[event_id]:
+                team_string = 'home_team'
             event_data[event_id][team_string] = team_name.text
             score_string = '{}_score'.format(team_string)
             is_live = event.find("span", {"class": "sportsbook__icon--live"})
