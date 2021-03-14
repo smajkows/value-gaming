@@ -35,9 +35,12 @@ class OverUnder extends React.Component {
                 <Card key={index} className="margin-top-10">
                   <Card.Header>{bet.name}</Card.Header>
                   <Card.Body>
-                    <Card.Title>{bet.home_team}  vs. {bet.away_team}</Card.Title>
+                    <Card.Title>{bet.home_team} {bet.home_team_score} vs. {bet.away_team} {bet.away_team_score}</Card.Title>
                     <Card.Text>
-                      Current Bet Value: {bet.value}
+                        {<b>{bet.time ? `${bet.time} in the ${bet.period}` : 'Game not started'}</b>}
+                    </Card.Text>
+                    <Card.Text>
+                      Current Bet Value: {bet.value ? `${bet.value}`: 'Unknown'}
                     </Card.Text>
                     <Button variant="outline-info">View Details</Button>
                   </Card.Body>
