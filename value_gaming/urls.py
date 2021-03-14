@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 
-from value_gaming.views import OverUnderJSONHandler, landing, login, OverUnderHandler, write_data_to_firebase_collection
+from value_gaming.views import OverUnderJSONHandler, landing, OverUnderHandler, write_data_to_firebase_collection
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -9,5 +9,5 @@ urlpatterns = [
     path('overunder', OverUnderHandler.as_view()),
     path('overunder_value', OverUnderJSONHandler.as_view()),
     path('empty', landing),
-    path('save_draftkings_data', write_data_to_firebase_collection),
+    path('save_draftkings_data', write_data_to_firebase_collection)
 ]

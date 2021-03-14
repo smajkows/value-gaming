@@ -1,6 +1,9 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 
 class OverUnder extends React.Component {
@@ -29,20 +32,45 @@ class OverUnder extends React.Component {
     }
   render() {
     const { isLoading, bets, error } = this.state;
+    console.log(bets);
     return (
         <div className="sub-container">
             {bets.map((bet, index) => (
                 <Card key={index} className="margin-top-10">
                   <Card.Header>{bet.name}</Card.Header>
                   <Card.Body>
-                    <Card.Title>{bet.home_team} {bet.home_team_score} vs. {bet.away_team} {bet.away_team_score}</Card.Title>
-                    <Card.Text>
-                        {<b>{bet.time ? `${bet.time} in the ${bet.period}` : 'Game not started'}</b>}
-                    </Card.Text>
-                    <Card.Text>
-                      Current Bet Value: {bet.value ? `${bet.value}`: 'Unknown'}
-                    </Card.Text>
-                    <Button variant="outline-info">View Details</Button>
+                    <Container>
+                          <Row>
+                            <Col sm={10}>
+                                <Card.Title> {bet.away_team} ({bet.away_team_score}) vs. {bet.home_team} ({bet.home_team_score})</Card.Title>
+                                <Card.Text> {bet.time ? `${bet.time} in the ${bet.period}` : 'Game not started'}</Card.Text>
+                            </Col>
+                            <Col sm={2}>
+                                <Button variant="outline-info">View Details</Button>
+                            </Col>
+                          </Row>
+                          <Row className="margin-top-10">
+                            <Col>
+                                <Card.Text>
+                                    <p> Moneyline: </p>
+                                    {bet['moneyline_plus'] ? `${bet['moneyline_plus']['odds']} | ${bet['moneyline_minus']['odds']}` : 'Not Avaliable'}
+                                </Card.Text>
+                            </Col>
+                            <Col>
+                              <Card.Text>
+                                  <p> Spreads: </p>
+                                  {bet['spread_plus'] ? `${bet['spread_plus']['line']} ${bet['spread_plus']['odds']}  | ${bet['spread_minus']['line']} ${bet['spread_minus']['odds']}` : 'Not Available'}
+                              </Card.Text>
+                            </Col>
+                            <Col>
+                              <Card.Text>
+                                  <p>O/U: </p>
+                                  {bet['O'] ? `Over: ${bet['O']['line']} ${bet['O']['odds']}  | Under:${bet['U']['line']} ${bet['U']['odds']}` : 'Not Available'}
+                              </Card.Text>
+                            </Col>
+                          </Row>
+                        </Container>
+
                   </Card.Body>
                 </Card>
             ))}

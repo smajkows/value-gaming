@@ -13,7 +13,9 @@ db = firestore.client()
 
 class LiveGameData(object):
     def __init__(self, home_team, away_team, time, home_team_score, away_team_score, period, source, event_id,
-                 projected_total):
+                 projected_total, moneyline_plus_odds, moneyline_minus_odds, spread_line, spread_plus_odds,
+                 spread_minus_odds, over_under_line, over_under_O_odds, over_under_U_odds, sport_id, league_id,
+                 subcategory_id):
         self.home_team = home_team
         self.away_team = away_team
         self.time = time
@@ -23,18 +25,41 @@ class LiveGameData(object):
         self.source = source
         self.event_id = event_id
         self.projected_total = projected_total
+        self.moneyline_plus_odds = moneyline_plus_odds
+        self.moneyline_minus_odds = moneyline_minus_odds
+        self.spread_line = spread_line
+        self.spread_plus_odds = spread_plus_odds
+        self.spread_minus_odds = spread_minus_odds
+        self.over_under_line = over_under_line
+        self.over_under_O_odds = over_under_O_odds
+        self.over_under_U_odds = over_under_U_odds
+        self.sport_id = sport_id,
+        self.league_id = league_id,
+        self.subcategory_id = subcategory_id
 
     def to_dict(self):
+        split_time = self.time.rsplit(":")
         result_dict = {
             'home_team': self.home_team,
             'away_team': self.away_team,
-            'time': self.time,  # TODO: change this to seconds left
+            'time': (int(split_time[0]) * 60) + int(split_time[1]),  # convert minutes:seconds to seconds
             'home_team_score': self.home_team_score,
             'away_team_score': self.away_team_score,
             'period': self.period,
             'source': self.source,
             'event_id': self.event_id,
-            'projected_total': self.projected_total
+            'projected_total': self.projected_total,
+            'moneyline_plus_odds': self.moneyline_plus_odds,
+            'moneyline_minus_odds': self.moneyline_minus_odds,
+            'spread_line': self.spread_line,
+            'spread_plus_odds': self.spread_plus_odds,
+            'spread_minus_odds': self.spread_minus_odds,
+            'over_under_line': self.over_under_line,
+            'over_under_O_odds': self.over_under_O_odds,
+            'over_under_U_odds': self.over_under_U_odds,
+            'sport_id': self.sport_id[0],  # these are tuples first element is the right int, idk why
+            'league_id': self.league_id[0],
+            'subcategory_id': self.subcategory_id
         }
         return result_dict
 
@@ -44,9 +69,13 @@ class LiveGameDataDraftkings(LiveGameData):
     collection = u'College_Basketball_Drafkings_LiveGames'
 
     def __init__(self, home_team, away_team, time, home_team_score, away_team_score, period, source, event_id,
-                 projected_total):
+                 projected_total, moneyline_plus_odds, moneyline_minus_odds, spread_line, spread_plus_odds,
+                 spread_minus_odds, over_under_line, over_under_O_odds, over_under_U_odds, sport_id, league_id,
+                 subcategory_id):
         super().__init__(home_team, away_team, time, home_team_score, away_team_score, period, source, event_id,
-                         projected_total)
+                 projected_total, moneyline_plus_odds, moneyline_minus_odds, spread_line, spread_plus_odds,
+                 spread_minus_odds, over_under_line, over_under_O_odds, over_under_U_odds, sport_id, league_id,
+                 subcategory_id)
 
     def populate_and_save(self):
         db.collection(self.collection).add(self.to_dict())
