@@ -13,7 +13,17 @@ location = 'us-central1'
 # Construct the fully qualified queue name.
 parent = client.queue_path(project, location, queue)
 
-ENUM = {'+': 'plus', '-': 'minus'}
+
+class PlusMinusHandler():
+    ENUM = {'+': 'plus', '-': 'minus'}
+
+    @classmethod
+    def handle_plus_minus(cls, value):
+        try:
+            return cls.ENUM[value]
+        except:
+            return 'plus'
+
 
 
 class LiveGameDataScraper(object):
@@ -27,7 +37,6 @@ class LiveGameDataScraper(object):
         for outcome in outcome_cells:
             outcome_body = outcome.find("div", {"class": "sportsbook-outcome-cell__body"})
             body_dict = json.loads(outcome_body.get("data-tracking"))
-            print(body_dict)
             event_id = body_dict.get('eventId')
             event_data[event_id]['sport_id'] = body_dict.get('sportName')
             event_data[event_id]['league_id'] = body_dict.get('leagueName')
@@ -44,9 +53,9 @@ class LiveGameDataScraper(object):
             line_odds = getattr(line_odds_cell, 'text') if line_odds_cell else None
 
             if label_text == 'spread' and line:
-                label_text = '{}_{}'.format(label_text, ENUM[line[0]])
+                label_text = '{}_{}'.format(label_text, PlusMinusHandler.handle_plus_minus(line[0]))
             if label_text == 'moneyline':
-                label_text = '{}_{}'.format(label_text, ENUM[line_odds[0]])
+                label_text = '{}_{}'.format(label_text, PlusMinusHandler.handle_plus_minus(line_odds[0]))
 
             event_data[event_id][label_text] = {'line': line, 'odds': line_odds}
         return event_data
@@ -103,5 +112,10 @@ class LiveGameDataScraper(object):
             converted_payload = payload.encode()
             # Add the payload to the request.
             task['app_engine_http_request']['body'] = converted_payload
-        response = client.create_task(parent=parent, task=task)
+        try:
+            response = client.create_task(parent=parent, task=task)
+        except Exception as e:
+            print(e)
+            requests.post('http://127.0.0.1:8000/save_draftkings_data', data=converted_payload)
+            pass
         return event_data

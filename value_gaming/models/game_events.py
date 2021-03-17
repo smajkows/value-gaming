@@ -37,12 +37,11 @@ class LiveGameData(object):
         self.league_id = league_id,
         self.subcategory_id = subcategory_id
 
-    def to_dict(self):
-        split_time = self.time.rsplit(":")
+    def to_dict(self, parse_time=True):
         result_dict = {
             'home_team': self.home_team,
             'away_team': self.away_team,
-            'time': (int(split_time[0]) * 60) + int(split_time[1]),  # convert minutes:seconds to seconds
+            'time': self.time,
             'home_team_score': self.home_team_score,
             'away_team_score': self.away_team_score,
             'period': self.period,
@@ -61,6 +60,9 @@ class LiveGameData(object):
             'league_id': self.league_id[0],
             'subcategory_id': self.subcategory_id
         }
+        if parse_time:
+            split_time = self.time.rsplit(":")
+            result_dict['time'] = (int(split_time[0]) * 60) + int(split_time[1]),  # convert minutes:seconds to seconds
         return result_dict
 
 
@@ -78,4 +80,5 @@ class LiveGameDataDraftkings(LiveGameData):
                  subcategory_id)
 
     def populate_and_save(self):
-        db.collection(self.collection).add(self.to_dict())
+        obj_dict = self.to_dict()
+        db.collection('{}_{}'.format(self.collection, obj_dict.get('league_id'))).add(obj_dict)

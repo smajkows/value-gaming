@@ -5,7 +5,6 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-
 class OverUnder extends React.Component {
 
   constructor() {
@@ -23,7 +22,7 @@ class OverUnder extends React.Component {
         .then(response => response.json())
         .then(data =>
           this.setState({
-            bets: data,
+            bets: data['bets'],
             isLoading: false,
             error: false
           })
@@ -43,7 +42,7 @@ class OverUnder extends React.Component {
     else if (bets.length === 0){
         return (
             <div className="sub-container">
-                <Card> There are no live games, check back later. </Card>
+                No data check back later
             </div>
         );
     } else {
@@ -70,7 +69,7 @@ class OverUnder extends React.Component {
                                   Moneyline:
                               </Card.Text>
                                 <Card.Text>
-                                    {bet['moneyline_plus'] ? `${bet['moneyline_plus']['odds']} | ${bet['moneyline_minus']['odds']}` : 'Not Avaliable'}
+                                    {bet.moneyline_plus_odds ? `${bet.moneyline_plus_odds} | ${bet.moneyline_minus_odds}` : 'Not Avaliable'}
                                 </Card.Text>
                             </Col>
                             <Col>
@@ -78,7 +77,7 @@ class OverUnder extends React.Component {
                                   Spreads:
                               </Card.Text>
                               <Card.Text>
-                                  {bet['spread_plus'] ? `${bet['spread_plus']['line']} ${bet['spread_plus']['odds']}  | ${bet['spread_minus']['line']} ${bet['spread_minus']['odds']}` : 'Not Available'}
+                                  {bet.spread_line ? `+${bet.spread_line} ${bet.spread_plus_odds}  | -${bet.spread_line} ${bet.spread_minus_odds}` : 'Not Available'}
                               </Card.Text>
                             </Col>
                             <Col>
@@ -86,12 +85,11 @@ class OverUnder extends React.Component {
                                   O/U:
                               </Card.Text>
                               <Card.Text>
-                                  {bet['O'] ? `Over: ${bet['O']['line']} ${bet['O']['odds']}  | Under:${bet['U']['line']} ${bet['U']['odds']}` : 'Not Available'}
+                                  {bet.over_under_line ? `Over ${bet.over_under_line}: ${bet.over_under_O_odds}  | Under ${bet.over_under_line}:${bet.over_under_U_odds}` : 'Not Available'}
                               </Card.Text>
                             </Col>
                           </Row>
                         </Container>
-
                   </Card.Body>
                 </Card>
             ))}
